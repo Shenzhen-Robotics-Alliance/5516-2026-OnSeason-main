@@ -1,0 +1,43 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "place preload"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "grab second"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "place second"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "grab third"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "place third"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": true
+}
