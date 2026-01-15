@@ -40,6 +40,7 @@ import java.util.OptionalDouble;
 import org.ironmaple.utils.FieldMirroringUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsystem {
     public enum DriveType {
@@ -57,6 +58,7 @@ public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsyste
 
     private final OdometryThread odometryThread;
 
+    private final edu.wpi.first.wpilibj.smartdashboard.Field2d field2d = new edu.wpi.first.wpilibj.smartdashboard.Field2d();
     // Alerts
     private final Alert gyroDisconnectedAlert =
             AlertsManager.create("Gyro hardware fault detected!", Alert.AlertType.kError);
@@ -113,7 +115,8 @@ public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsyste
         setpointGenerator = new SwerveSetpointGenerator(defaultPathPlannerRobotConfig(), RPM.of(300));
         this.setpoint = new SwerveSetpoint(new ChassisSpeeds(), getModuleStates(), DriveFeedforwards.zeros(4));
 
-        startDashboardDisplay();
+        //startDashboardDisplay();
+        SmartDashboard.putData("Field", field2d);
     }
 
     @Override
@@ -148,6 +151,8 @@ public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsyste
         batteryBrownoutAlert.set(batteryBrownoutDebouncer.calculate(RobotController.isBrownedOut()));
         drivetrainOverCurrentAlert.set(drivetrainOverCurrentDebouncer.calculate(
                 getDriveTrainTotalCurrentAmps() > OVER_CURRENT_WARNING.in(Amps)));
+
+        field2d.setRobotPose(RobotState.getInstance().getPose());
 
         Logger.recordOutput(
                 "RobotState/SensorLessOdometryPose", RobotState.getInstance().getSensorLessOdometryPose());
@@ -375,6 +380,7 @@ public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsyste
         return CHASSIS_MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond);
     }
 
+    /** 
     private void startDashboardDisplay() {
         SmartDashboard.putData("Swerve Drive", builder -> {
             builder.setSmartDashboardType("SwerveDrive");
@@ -407,6 +413,7 @@ public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsyste
                     null);
         });
     }
+    */
 
     public double getCanBusUtilization() {
         return canBusInputs.utilization;
