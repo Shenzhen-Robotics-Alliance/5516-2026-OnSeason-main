@@ -37,10 +37,8 @@ import frc.robot.utils.MapleTimeUtils;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import org.ironmaple.utils.FieldMirroringUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
 public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsystem {
     public enum DriveType {
@@ -58,7 +56,8 @@ public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsyste
 
     private final OdometryThread odometryThread;
 
-    private final edu.wpi.first.wpilibj.smartdashboard.Field2d field2d = new edu.wpi.first.wpilibj.smartdashboard.Field2d();
+    private final edu.wpi.first.wpilibj.smartdashboard.Field2d field2d =
+            new edu.wpi.first.wpilibj.smartdashboard.Field2d();
     // Alerts
     private final Alert gyroDisconnectedAlert =
             AlertsManager.create("Gyro hardware fault detected!", Alert.AlertType.kError);
@@ -115,7 +114,7 @@ public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsyste
         setpointGenerator = new SwerveSetpointGenerator(defaultPathPlannerRobotConfig(), RPM.of(300));
         this.setpoint = new SwerveSetpoint(new ChassisSpeeds(), getModuleStates(), DriveFeedforwards.zeros(4));
 
-        //startDashboardDisplay();
+        // startDashboardDisplay();
         SmartDashboard.putData("Field", field2d);
     }
 
@@ -380,41 +379,25 @@ public class SwerveDrive extends SubsystemBase implements HolonomicDriveSubsyste
         return CHASSIS_MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond);
     }
 
-    /** 
-    private void startDashboardDisplay() {
-        SmartDashboard.putData("Swerve Drive", builder -> {
-            builder.setSmartDashboardType("SwerveDrive");
-
-            builder.addDoubleProperty(
-                    "Front Left Angle", () -> swerveModules[0].getSteerFacing().getRadians(), null);
-            builder.addDoubleProperty(
-                    "Front Left Velocity", () -> swerveModules[0].getDriveVelocityMetersPerSec(), null);
-
-            builder.addDoubleProperty(
-                    "Front Right Angle", () -> swerveModules[0].getSteerFacing().getRadians(), null);
-            builder.addDoubleProperty(
-                    "Front Right Velocity", () -> swerveModules[0].getDriveVelocityMetersPerSec(), null);
-
-            builder.addDoubleProperty(
-                    "Back Left Angle", () -> swerveModules[0].getSteerFacing().getRadians(), null);
-            builder.addDoubleProperty(
-                    "Back Left Velocity", () -> swerveModules[0].getDriveVelocityMetersPerSec(), null);
-
-            builder.addDoubleProperty(
-                    "Back Right Angle", () -> swerveModules[0].getSteerFacing().getRadians(), null);
-            builder.addDoubleProperty(
-                    "Back Right Velocity", () -> swerveModules[0].getDriveVelocityMetersPerSec(), null);
-
-            builder.addDoubleProperty(
-                    "Robot Angle",
-                    () -> getFacing()
-                            .minus(FieldMirroringUtils.getCurrentAllianceDriverStationFacing())
-                            .getRadians(),
-                    null);
-        });
-    }
-    */
-
+    /**
+     * private void startDashboardDisplay() { SmartDashboard.putData("Swerve Drive", builder -> {
+     * builder.setSmartDashboardType("SwerveDrive");
+     *
+     * <p>builder.addDoubleProperty( "Front Left Angle", () -> swerveModules[0].getSteerFacing().getRadians(), null);
+     * builder.addDoubleProperty( "Front Left Velocity", () -> swerveModules[0].getDriveVelocityMetersPerSec(), null);
+     *
+     * <p>builder.addDoubleProperty( "Front Right Angle", () -> swerveModules[0].getSteerFacing().getRadians(), null);
+     * builder.addDoubleProperty( "Front Right Velocity", () -> swerveModules[0].getDriveVelocityMetersPerSec(), null);
+     *
+     * <p>builder.addDoubleProperty( "Back Left Angle", () -> swerveModules[0].getSteerFacing().getRadians(), null);
+     * builder.addDoubleProperty( "Back Left Velocity", () -> swerveModules[0].getDriveVelocityMetersPerSec(), null);
+     *
+     * <p>builder.addDoubleProperty( "Back Right Angle", () -> swerveModules[0].getSteerFacing().getRadians(), null);
+     * builder.addDoubleProperty( "Back Right Velocity", () -> swerveModules[0].getDriveVelocityMetersPerSec(), null);
+     *
+     * <p>builder.addDoubleProperty( "Robot Angle", () -> getFacing()
+     * .minus(FieldMirroringUtils.getCurrentAllianceDriverStationFacing()) .getRadians(), null); }); }
+     */
     public double getCanBusUtilization() {
         return canBusInputs.utilization;
     }
