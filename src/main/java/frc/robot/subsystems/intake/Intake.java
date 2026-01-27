@@ -36,7 +36,8 @@ import frc.robot.subsystems.intake.Intake.Speed;
 public class Intake extends SubsystemBase {
     public enum Speed {
         STOP(0),
-        INTAKE(0.8);
+        INTAKE(0.8),
+        OUTTAKE(-0.8);
 
         private final double percentOutput;
 
@@ -51,7 +52,7 @@ public class Intake extends SubsystemBase {
 
     public enum Position {
         INIT(0), // Initial situation to hold the fuel
-        STOWED(0), // STOWED Situation
+        STOWED(0), // STOWED: back to init but less degrees
         INTAKE(0), // INAKE Situation
         HOLD(0); // HOLD and agitate the fuel when bot move
 
@@ -144,10 +145,19 @@ public class Intake extends SubsystemBase {
     }
 
     public Command intakeCommand() {
+            return startEnd(
+                    () -> {
+                        setIntakePosition(Position.INTAKE);
+                        setIntakeSpeed(Speed.INTAKE);
+                    },
+                    () -> setIntakeSpeed(Speed.STOP));
+    }
+
+    public Command outtakeCommand() {
         return startEnd(
                 () -> {
                     setIntakePosition(Position.INTAKE);
-                    setIntakeSpeed(Speed.INTAKE);
+                    setIntakeSpeed(Speed.OUTTAKE);
                 },
                 () -> setIntakeSpeed(Speed.STOP));
     }
