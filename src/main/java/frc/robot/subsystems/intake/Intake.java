@@ -36,6 +36,7 @@ import frc.robot.subsystems.intake.Intake.Speed;
 public class Intake extends SubsystemBase {
     public enum Speed {
         STOP(0),
+        OUTTAKE(-0.8),
         INTAKE(0.8);
 
         private final double percentOutput;
@@ -148,6 +149,15 @@ public class Intake extends SubsystemBase {
                 () -> {
                     setIntakePosition(Position.INTAKE);
                     setIntakeSpeed(Speed.INTAKE);
+                },
+                () -> setIntakeSpeed(Speed.STOP));
+    }
+
+    public Command outtakeCommand() {
+        return startEnd(
+                () -> {
+                    setIntakePosition(Position.INTAKE);
+                    setIntakeSpeed(Speed.OUTTAKE);
                 },
                 () -> setIntakeSpeed(Speed.STOP));
     }
