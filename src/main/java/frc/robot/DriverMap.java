@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.utils.MapleJoystickDriveInput;
+import frc.robot.util.MapleJoystickDriveInput;
 import java.util.function.DoubleSupplier;
 
 public interface DriverMap extends Subsystem {
@@ -24,23 +24,19 @@ public interface DriverMap extends Subsystem {
 
     Trigger lockChassisWithXFormatButton();
 
-    Trigger autoAlignmentButtonLeft();
+    // Trigger lockToZeroAngle();
 
-    Trigger autoAlignmentButtonRight();
+    /**
+     * Start intake button --> Enough fuels --> Align to Hub && Start shooter motor --> Start feeder motors and intake
+     * motors to shoot
+     */
+    Trigger autoAlignToHubButton();
 
     Trigger intakeButton();
 
-    Trigger backOffButton();
+    Trigger startShooterMotorButton();
 
-    Trigger l2Button();
-
-    Trigger l3Button();
-
-    Trigger l4Button();
-
-    Trigger scoreButton();
-
-    Trigger autoRotationButton();
+    Trigger startFeederToShootButton();
 
     DoubleSupplier translationalAxisX();
 
@@ -111,14 +107,12 @@ public interface DriverMap extends Subsystem {
         public Trigger lockChassisWithXFormatButton() {
             return xboxController.x();
         }
-
+        // @Override
+        // public Trigger lockToZeroAngle() {
+        //     return xboxController.a();
+        // }
         @Override
-        public Trigger autoAlignmentButtonLeft() {
-            return xboxController.leftBumper();
-        }
-
-        @Override
-        public Trigger autoAlignmentButtonRight() {
+        public Trigger autoAlignToHubButton() {
             return xboxController.rightBumper();
         }
 
@@ -128,27 +122,12 @@ public interface DriverMap extends Subsystem {
         }
 
         @Override
-        public Trigger backOffButton() {
-            return xboxController.back();
+        public Trigger startShooterMotorButton() {
+            return xboxController.leftBumper();
         }
 
         @Override
-        public Trigger l2Button() {
-            return xboxController.a();
-        }
-
-        @Override
-        public Trigger l3Button() {
-            return xboxController.b();
-        }
-
-        @Override
-        public Trigger l4Button() {
-            return xboxController.y();
-        }
-
-        @Override
-        public Trigger scoreButton() {
+        public Trigger startFeederToShootButton() {
             return xboxController.rightTrigger(0.5);
         }
 
@@ -161,11 +140,6 @@ public interface DriverMap extends Subsystem {
     final class LeftHandedXbox extends DriverXbox {
         public LeftHandedXbox(int port) {
             super(port);
-        }
-
-        @Override
-        public Trigger autoRotationButton() {
-            return xboxController.rightStick();
         }
 
         @Override
@@ -192,11 +166,6 @@ public interface DriverMap extends Subsystem {
     class RightHandedXbox extends DriverXbox {
         public RightHandedXbox(int port) {
             super(port);
-        }
-
-        @Override
-        public Trigger autoRotationButton() {
-            return xboxController.leftStick();
         }
 
         @Override
@@ -258,12 +227,7 @@ public interface DriverMap extends Subsystem {
         }
 
         @Override
-        public Trigger autoAlignmentButtonLeft() {
-            return ps5Controller.L1();
-        }
-
-        @Override
-        public Trigger autoAlignmentButtonRight() {
+        public Trigger autoAlignToHubButton() {
             return ps5Controller.R1();
         }
 
@@ -273,27 +237,12 @@ public interface DriverMap extends Subsystem {
         }
 
         @Override
-        public Trigger backOffButton() {
-            return ps5Controller.touchpad();
+        public Trigger startShooterMotorButton() {
+            return ps5Controller.L1();
         }
 
         @Override
-        public Trigger l2Button() {
-            return ps5Controller.cross();
-        }
-
-        @Override
-        public Trigger l3Button() {
-            return ps5Controller.circle();
-        }
-
-        @Override
-        public Trigger l4Button() {
-            return ps5Controller.triangle();
-        }
-
-        @Override
-        public Trigger scoreButton() {
+        public Trigger startFeederToShootButton() {
             return ps5Controller.R2();
         }
 
@@ -307,11 +256,6 @@ public interface DriverMap extends Subsystem {
 
         public LeftHandedPS5(int port) {
             super(port);
-        }
-
-        @Override
-        public Trigger autoRotationButton() {
-            return ps5Controller.R3();
         }
 
         @Override
@@ -339,11 +283,6 @@ public interface DriverMap extends Subsystem {
 
         public RightHandedPS5(int port) {
             super(port);
-        }
-
-        @Override
-        public Trigger autoRotationButton() {
-            return ps5Controller.L3();
         }
 
         @Override

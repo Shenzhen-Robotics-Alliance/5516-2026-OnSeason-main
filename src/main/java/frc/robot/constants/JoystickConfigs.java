@@ -2,8 +2,8 @@ package frc.robot.constants;
 
 /** Configs for the driver's joystick See {@link frc.robot.utils.MapleJoystickDriveInput} */
 public class JoystickConfigs {
-    public static final double DEFAULT_TRANSLATIONAL_SENSITIVITY = 0.85;
-    public static final double DEFAULT_ROTATIONAL_SENSITIVITY = 0.7;
+    public static final double DEFAULT_TRANSLATIONAL_SENSITIVITY = 0.55;
+    public static final double DEFAULT_ROTATIONAL_SENSITIVITY = 0.6;
 
     /**
      * the amount of time that the chassis waits after the pilot's last input, before it places all the swerve wheels to

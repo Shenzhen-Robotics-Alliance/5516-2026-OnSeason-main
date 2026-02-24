@@ -1,17 +1,21 @@
-// Original Source:
-// https://github.com/Mechanical-Advantage/AdvantageKit/tree/main/example_projects/advanced_swerve_drive/src/main,
-// Copyright 2021-2024 FRC 6328
-// Modified by 5516 Iron Maple https://github.com/Shenzhen-Robotics-Alliance/
+// Copyright 2021-2025 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// version 3 as published by the Free Software Foundation or
+// available in the root directory of this project.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
 
 package frc.robot;
 
-import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.constants.RobotMode;
-import frc.robot.constants.VisionConstants;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -19,26 +23,16 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+/**
+ * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
+ * described in the TimedRobot documentation. If you change the name of this class or the package after creating this
+ * project, you must also update the build.gradle file in the project.
+ */
 public class Robot extends LoggedRobot {
-    public enum RobotName {
-        // Team 5516 comp bot
-        TEAM_5516_COMPBOT_HYDROXIDE_II,
-        // Team 5516 champs bot
-        TEAM_5516_CHAMPBOT_HYDROXIDE_IV,
-        // Team 6706 comp bot
-        TEAM_6706_COMPBOT_HYDROXIDE_III
-    }
-
-    public static final double defaultPeriodSecs = 0.02;
-    public static final boolean LOG_DETAILS = isSimulation();
-    private static final RobotMode JAVA_SIM_MODE = RobotMode.SIM;
-    public static final RobotMode CURRENT_ROBOT_MODE = isReal() ? RobotMode.REAL : JAVA_SIM_MODE;
-    public static final RobotName CURRENT_ROBOT = RobotName.TEAM_5516_CHAMPBOT_HYDROXIDE_IV;
     private Command autonomousCommand;
     private RobotContainer robotContainer;
 
-    @Override
-    public void robotInit() {
+    public Robot() {
         // Record metadata
         Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -58,63 +52,61 @@ public class Robot extends LoggedRobot {
         }
 
         // Set up data receivers & replay source
-        switch (CURRENT_ROBOT_MODE) {
-            case REAL -> {
+        switch (Constants.currentMode) {
+            case REAL:
                 // Running on a real robot, log to a USB stick ("/U/logs")
                 Logger.addDataReceiver(new WPILOGWriter());
                 Logger.addDataReceiver(new NT4Publisher());
-            }
-            case SIM -> {
-                // Running a physics simulator
-                // Log to CodeDirectory/logs if you want to test logging system in a simulation
-                // Logger.addDataReceiver(new WPILOGWriter());
+                break;
+
+            case SIM:
+                // Running a physics simulator, log to NT
                 Logger.addDataReceiver(new NT4Publisher());
-            }
-            case REPLAY -> {
+                break;
+
+            case REPLAY:
                 // Replaying a log, set up replay source
                 setUseTiming(false); // Run as fast as possible
                 String logPath = LogFileUtil.findReplayLog();
                 Logger.setReplaySource(new WPILOGReader(logPath));
-                Logger.addDataReceiver(new WPILOGWriter(
-                        LogFileUtil.addPathSuffix(logPath, "_replayed"),
-                        WPILOGWriter.AdvantageScopeOpenBehavior.ALWAYS));
-            }
+                Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+                break;
         }
-
-        // Instantiate our RobotContainer. This will perform all our button bindings,
-        // and put our autonomous chooser on the dashboard.
-        robotContainer = new RobotContainer();
 
         // Start AdvantageKit logger
         Logger.start();
 
-        // Performance Optimization
-        SignalLogger.enableAutoLogging(false);
-        Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-        AprilTagFieldLayout.loadField(VisionConstants.CURRENT_FIELD);
+        // Instantiate our RobotContainer. This will perform all our button bindings,
+        // and put our autonomous chooser on the dashboard.
+        robotContainer = new RobotContainer();
     }
 
     /** This function is called periodically during all modes. */
     @Override
     public void robotPeriodic() {
+        // Switch thread to high priority to improve loop timing
+        Threads.setCurrentThreadPriority(true, 99);
+
+        // Runs the Scheduler. This is responsible for polling buttons, adding
+        // newly-scheduled commands, running already-scheduled commands, removing
+        // finished or interrupted commands, and running subsystem periodic() methods.
+        // This must be called from the robot's periodic block in order for anything in
+        // the Command-based framework to work.
         CommandScheduler.getInstance().run();
-        robotContainer.updateTelemetryAndLED();
+
+        // Return to normal thread priority
+        Threads.setCurrentThreadPriority(false, 10);
     }
 
     /** This function is called once when the robot is disabled. */
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+        robotContainer.resetSimulation();
+    }
 
     /** This function is called periodically when disabled. */
     @Override
-    public void disabledPeriodic() {
-        robotContainer.checkForCommandChanges();
-    }
-
-    @Override
-    public void disabledExit() {
-        robotContainer.setMotorBrake(true);
-    }
+    public void disabledPeriodic() {}
 
     /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
     @Override
@@ -122,45 +114,41 @@ public class Robot extends LoggedRobot {
         autonomousCommand = robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
-        if (autonomousCommand != null) autonomousCommand.schedule();
+        if (autonomousCommand != null) {
+            autonomousCommand.schedule();
+        }
     }
 
     /** This function is called periodically during autonomous. */
     @Override
     public void autonomousPeriodic() {}
 
-    @Override
-    public void autonomousExit() {
-        if (autonomousCommand != null) autonomousCommand.cancel();
-    }
-
     /** This function is called once when teleop is enabled. */
     @Override
-    public void teleopInit() {}
+    public void teleopInit() {
+        // This makes sure that the autonomous stops running when
+        // teleop starts running. If you want the autonomous to
+        // continue until interrupted by another command, remove
+        // this line or comment it out.
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
+        }
+    }
 
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {}
 
     /** This function is called once when test mode is enabled. */
-    private Command testCommand = Commands.none();
-
     @Override
     public void testInit() {
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll();
-        CommandScheduler.getInstance().schedule(testCommand = robotContainer.getTestCommand());
     }
 
     /** This function is called periodically during test mode. */
     @Override
     public void testPeriodic() {}
-
-    @Override
-    public void testExit() {
-        testCommand.cancel();
-        robotContainer.configureButtonBindings();
-    }
 
     /** This function is called once when the robot is first started up. */
     @Override
@@ -169,6 +157,6 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically whilst in simulation. */
     @Override
     public void simulationPeriodic() {
-        robotContainer.updateFieldSimAndDisplay();
+        robotContainer.updateSimulation();
     }
 }

@@ -1,47 +1,42 @@
-// Original Source:
-// https://github.com/Mechanical-Advantage/AdvantageKit/tree/main/example_projects/advanced_swerve_drive/src/main,
-// Copyright 2021-2024 FRC 6328
-// Modified by 5516 Iron Maple https://github.com/Shenzhen-Robotics-Alliance/
+// Copyright 2021-2025 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// version 3 as published by the Free Software Foundation or
+// available in the root directory of this project.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.vision.VisionConstants.*;
 
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.wpilibj.*;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.autos.*;
-import frc.robot.commands.drive.*;
-import frc.robot.constants.*;
+import frc.robot.commands.DriveCommands;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.arm.Arm;
+import frc.robot.subsystems.arm.ArmIOReal;
 import frc.robot.subsystems.drive.*;
-import frc.robot.subsystems.drive.IO.*;
-import frc.robot.subsystems.led.LEDStatusLight;
-import frc.robot.subsystems.vision.apriltags.AprilTagVision;
-import frc.robot.subsystems.vision.apriltags.AprilTagVisionIOReal;
-import frc.robot.subsystems.vision.apriltags.ApriltagVisionIOSim;
-import frc.robot.subsystems.vision.apriltags.PhotonCameraProperties;
-import frc.robot.utils.AlertsManager;
-import frc.robot.utils.MapleJoystickDriveInput;
-import java.util.*;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIOReal;
+import frc.robot.subsystems.vision.*;
+import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
-import org.ironmaple.utils.FieldMirroringUtils;
-import org.ironmaple.utils.mathutils.MapleCommonMath;
-import org.littletonrobotics.conduit.ConduitApi;
-import org.littletonrobotics.junction.LoggedPowerDistribution;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -51,254 +46,164 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * Instead, the structure of the robot (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-    public static final boolean SIMULATE_AUTO_PLACEMENT_INACCURACY = true;
-
-    // pdp for akit logging
-    public final LoggedPowerDistribution powerDistributionLog;
     // Subsystems
-    public final SwerveDrive drive;
-    public final AprilTagVision aprilTagVision;
-    public final LEDStatusLight ledStatusLight;
+    private final Vision vision;
+    private final Drive drive;
+    private SwerveDriveSimulation driveSimulation = null;
+
+    public Shooter shooter;
+    public Arm arm;
 
     // Controller
-    // public final DriverMap driver = new DriverMap.LeftHandedPS5(0);
-    public final DriverMap driver = new DriverMap.LeftHandedXbox(0);
-    public final CommandXboxController operator = new CommandXboxController(1);
+    //     private final CommandXboxController controller = new CommandXboxController(0);
+    public final DriverMap controller = new DriverMap.RightHandedXbox(0);
+    public final CommandXboxController viceController = new CommandXboxController(1);
 
-    private final LoggedDashboardChooser<Auto> autoChooser;
-    private final SendableChooser<Supplier<Command>> testChooser;
-
-    // Simulated drive
-    private final SwerveDriveSimulation driveSimulation;
-    // public final CoralHolder coralHolder;
-    // private final Climb climb;
-
-    private final Field2d field = new Field2d();
+    // Dashboard inputs
+    private final LoggedDashboardChooser<Command> autoChooser;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
-        final List<PhotonCameraProperties> camerasProperties =
-                VisionConstants.photonVisionCameras; // load configs stored directly in VisionConstants.java
-
-        switch (Robot.CURRENT_ROBOT_MODE) {
-            case REAL -> {
+        switch (Constants.currentMode) {
+            case REAL:
                 // Real robot, instantiate hardware IO implementations
-                driveSimulation = null;
+                drive = new Drive(
+                        new GyroIOPigeon2(),
+                        new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                        new ModuleIOTalonFX(TunerConstants.FrontRight),
+                        new ModuleIOTalonFX(TunerConstants.BackLeft),
+                        new ModuleIOTalonFX(TunerConstants.BackRight),
+                        (robotPose) -> {});
+                vision = new Vision(
+                        drive,
+                        new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation),
+                        new VisionIOLimelight(VisionConstants.camera1Name, drive::getRotation));
+                break;
 
-                powerDistributionLog = LoggedPowerDistribution.getInstance(1, PowerDistribution.ModuleType.kRev);
-
-                /* CTRE Chassis: */
-                drive = new SwerveDrive(
-                        SwerveDrive.DriveType.CTRE_TIME_SYNCHRONIZED,
-                        new GyroIOPigeon2(TunerConstants.DrivetrainConstants, false),
-                        new CanBusIOReal(TunerConstants.kCANBus),
-                        new ModuleIOTalon(TunerConstants.FrontLeft, "FrontLeft"),
-                        new ModuleIOTalon(TunerConstants.FrontRight, "FrontRight"),
-                        new ModuleIOTalon(TunerConstants.BackLeft, "BackLeft"),
-                        new ModuleIOTalon(TunerConstants.BackRight, "BackRight"));
-
-                aprilTagVision = new AprilTagVision(new AprilTagVisionIOReal(camerasProperties), camerasProperties);
-            }
-
-            case SIM -> {
-                SimulatedArena.overrideSimulationTimings(
-                        Seconds.of(Robot.defaultPeriodSecs), DriveTrainConstants.SIMULATION_TICKS_IN_1_PERIOD);
-                this.driveSimulation = new SwerveDriveSimulation(
-                        DriveTrainSimulationConfig.Default()
-                                .withRobotMass(DriveTrainConstants.ROBOT_MASS)
-                                .withBumperSize(DriveTrainConstants.BUMPER_LENGTH, DriveTrainConstants.BUMPER_WIDTH)
-                                .withTrackLengthTrackWidth(
-                                        DriveTrainConstants.TRACK_LENGTH, DriveTrainConstants.TRACK_WIDTH)
-                                .withSwerveModule(new SwerveModuleSimulationConfig(
-                                        DriveTrainConstants.DRIVE_MOTOR_MODEL,
-                                        DriveTrainConstants.STEER_MOTOR_MODEL,
-                                        DriveTrainConstants.DRIVE_GEAR_RATIO,
-                                        DriveTrainConstants.STEER_GEAR_RATIO,
-                                        DriveTrainConstants.DRIVE_FRICTION_VOLTAGE,
-                                        DriveTrainConstants.STEER_FRICTION_VOLTAGE,
-                                        DriveTrainConstants.WHEEL_RADIUS,
-                                        DriveTrainConstants.STEER_INERTIA,
-                                        DriveTrainConstants.WHEEL_COEFFICIENT_OF_FRICTION))
-                                .withGyro(DriveTrainConstants.gyroSimulationFactory),
-                        new Pose2d(3, 3, new Rotation2d()));
-                SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
-
-                powerDistributionLog = LoggedPowerDistribution.getInstance();
-
+            case SIM:
                 // Sim robot, instantiate physics sim IO implementations
-                final ModuleIOSim frontLeft = new ModuleIOSim(driveSimulation.getModules()[0]),
-                        frontRight = new ModuleIOSim(driveSimulation.getModules()[1]),
-                        backLeft = new ModuleIOSim(driveSimulation.getModules()[2]),
-                        backRight = new ModuleIOSim(driveSimulation.getModules()[3]);
-                final GyroIOSim gyroIOSim = new GyroIOSim(driveSimulation.getGyroSimulation());
-                drive = new SwerveDrive(
-                        SwerveDrive.DriveType.GENERIC,
-                        gyroIOSim,
-                        (canBusInputs) -> {},
-                        frontLeft,
-                        frontRight,
-                        backLeft,
-                        backRight);
+                driveSimulation =
+                        new SwerveDriveSimulation(Drive.getMapleSimConfig(), new Pose2d(3, 3, new Rotation2d()));
+                SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
+                drive = new Drive(
+                        new GyroIOSim(driveSimulation.getGyroSimulation()),
+                        new ModuleIOSim(driveSimulation.getModules()[0]),
+                        new ModuleIOSim(driveSimulation.getModules()[1]),
+                        new ModuleIOSim(driveSimulation.getModules()[2]),
+                        new ModuleIOSim(driveSimulation.getModules()[3]),
+                        driveSimulation::setSimulationWorldPose);
 
-                aprilTagVision = new AprilTagVision(
-                        new ApriltagVisionIOSim(
-                                camerasProperties,
-                                VisionConstants.fieldLayout,
-                                driveSimulation::getSimulatedDriveTrainPose),
-                        camerasProperties);
+                vision = new Vision(
+                        drive,
+                        new VisionIOPhotonVisionSim(
+                                camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
+                        new VisionIOPhotonVisionSim(
+                                camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
+                break;
 
-                SimulatedArena.getInstance().resetFieldForAuto();
-            }
-
-            default -> {
-                this.driveSimulation = null;
-
-                powerDistributionLog = LoggedPowerDistribution.getInstance();
-
+            default:
                 // Replayed robot, disable IO implementations
-                drive = new SwerveDrive(
-                        SwerveDrive.DriveType.GENERIC,
-                        (canBusInputs) -> {},
-                        (inputs) -> {},
-                        (inputs) -> {},
-                        (inputs) -> {},
-                        (inputs) -> {},
-                        (inputs) -> {});
-
-                aprilTagVision = new AprilTagVision((inputs) -> {}, camerasProperties);
-            }
+                drive = new Drive(
+                        new GyroIO() {},
+                        new ModuleIO() {},
+                        new ModuleIO() {},
+                        new ModuleIO() {},
+                        new ModuleIO() {},
+                        (robotPose) -> {});
+                vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
+                break;
         }
 
-        this.ledStatusLight = new LEDStatusLight(0, 26, false);
+        shooter = new Shooter(new ShooterIOReal());
+        arm = new Arm(new ArmIOReal());
 
-        this.drive.configHolonomicPathPlannerAutoBuilder(field);
+        // Set up auto routines
+        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-        SmartDashboard.putData("Select Test", testChooser = buildTestsChooser());
-        autoChooser = buildAutoChooser();
+        // Set up SysId routines
+        autoChooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+        autoChooser.addOption("Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Forward)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        autoChooser.addOption(
+                "Drive SysId (Quasistatic Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        autoChooser.addOption("Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        autoChooser.addOption("Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
+        // Configure the button bindings
         configureButtonBindings();
-
-        SmartDashboard.putData("Field", field);
-
-        setMotorBrake(true);
-    }
-
-    private void configureAutoTriggers(PathPlannerAuto pathPlannerAuto) {}
-
-    private LoggedDashboardChooser<Auto> buildAutoChooser() {
-        final LoggedDashboardChooser<Auto> autoSendableChooser = new LoggedDashboardChooser<>("Select Auto");
-        autoSendableChooser.addDefaultOption("None", Auto.none());
-
-        SmartDashboard.putData("Select Auto", autoSendableChooser.getSendableChooser());
-        return autoSendableChooser;
-    }
-
-    private SendableChooser<Supplier<Command>> buildTestsChooser() {
-        final SendableChooser<Supplier<Command>> testsChooser = new SendableChooser<>();
-        testsChooser.setDefaultOption("None", Commands::none);
-        testsChooser.addOption(
-                "Drive SysId- Quasistatic - Forward", () -> drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        testsChooser.addOption(
-                "Drive SysId- Quasistatic - Reverse", () -> drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        testsChooser.addOption(
-                "Drive SysId- Dynamic - Forward", () -> drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        testsChooser.addOption(
-                "Drive SysId- Dynamic - Reverse", () -> drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-        return testsChooser;
-    }
-
-    private boolean isDSPresentedAsRed = FieldMirroringUtils.isSidePresentedAsRed();
-    private Command autonomousCommand = Commands.none();
-    private Auto previouslySelectedAuto = Auto.none();
-    /** reconfigures button bindings if alliance station has changed re-create autos if not yet created */
-    public void checkForCommandChanges() {
-        final Auto selectedAuto = autoChooser.get();
-        if (FieldMirroringUtils.isSidePresentedAsRed() == isDSPresentedAsRed & selectedAuto == previouslySelectedAuto)
-            return;
-
-        try {
-            this.autonomousCommand = selectedAuto.getAutoCommand(this);
-            configureAutoTriggers(new PathPlannerAuto(autonomousCommand, selectedAuto.getStartingPoseAtBlueAlliance()));
-            System.out.println("Auto updated to: " + selectedAuto.getClass());
-        } catch (Exception e) {
-            this.autonomousCommand = Commands.none();
-            DriverStation.reportError(
-                    "Error Occurred while obtaining autonomous command: \n"
-                            + e.getMessage()
-                            + "\n"
-                            + Arrays.toString(e.getStackTrace()),
-                    false);
-            throw new RuntimeException(e);
-        }
-        resetFieldAndOdometryForAuto(selectedAuto.getStartingPoseAtBlueAlliance());
-
-        previouslySelectedAuto = selectedAuto;
-        isDSPresentedAsRed = FieldMirroringUtils.isSidePresentedAsRed();
-    }
-
-    private void resetFieldAndOdometryForAuto(Pose2d robotStartingPoseAtBlueAlliance) {
-        final Pose2d startingPose = FieldMirroringUtils.toCurrentAlliancePose(robotStartingPoseAtBlueAlliance);
-
-        if (driveSimulation != null) {
-            Transform2d placementError = SIMULATE_AUTO_PLACEMENT_INACCURACY
-                    ? new Transform2d(
-                            MapleCommonMath.generateRandomNormal(0, 0.2),
-                            MapleCommonMath.generateRandomNormal(0, 0.2),
-                            Rotation2d.fromDegrees(MapleCommonMath.generateRandomNormal(0, 1)))
-                    : new Transform2d();
-            driveSimulation.setSimulationWorldPose(startingPose.plus(placementError));
-            SimulatedArena.getInstance().resetFieldForAuto();
-        }
-
-        aprilTagVision
-                .focusOnTarget(-1, -1)
-                .withTimeout(0.1)
-                .alongWith(Commands.runOnce(() -> drive.setPose(startingPose), drive))
-                .ignoringDisable(true)
-                .schedule();
     }
 
     /**
      * Use this method to define your button->command mappings. Buttons can be created by instantiating a
-     * {@link GenericHID} or one of its subclasses ({@link Joystick} or {@link XboxController}), and then passing it to
-     * a {@link JoystickButton}.
+     * {@link GenericHID} or one of its subclasses ({@link edu.wpi.first.wpilibj.Joystick} or {@link XboxController}),
+     * and then passing it to a {@link edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
-    public void configureButtonBindings() {
+    private void configureButtonBindings() {
+        // Default command, normal field-relative drive
+        // drive.setDefaultCommand(DriveCommands.joystickDrive(
+        //         drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(), () -> -controller.getRightX()));
+
         SmartDashboard.putData(
                 "Enable Motor Brake",
-                Commands.runOnce(() -> setMotorBrake(true))
-                        .onlyIf(DriverStation::isDisabled)
-                        .beforeStarting(Commands.print("unlocking motor brakes..."))
-                        .andThen(Commands.print("motor brakes unlocked!"))
-                        .ignoringDisable(true));
+                Commands.runOnce(() -> setMotorBrake(true)).ignoringDisable(true));
         SmartDashboard.putData(
                 "Disable Motor Brake",
-                Commands.runOnce(() -> setMotorBrake(false))
-                        .onlyIf(DriverStation::isDisabled)
-                        .beforeStarting(Commands.print("locking motor brakes..."))
-                        .andThen(Commands.print("motor brakes locked!"))
-                        .ignoringDisable(true));
+                Commands.runOnce(() -> setMotorBrake(false)).ignoringDisable(true));
 
-        /* joystick drive command */
-        final MapleJoystickDriveInput driveInput = driver.getDriveInput();
-        IntSupplier pov =
-                // driver.getController().getHID()::getPOV;
-                () -> -1;
-        final JoystickDrive joystickDrive = new JoystickDrive(driveInput, () -> true, pov, drive);
-        drive.setDefaultCommand(joystickDrive.ignoringDisable(true));
-        JoystickDrive.instance = Optional.of(joystickDrive);
+        drive.setDefaultCommand(DriveCommands.joystickDrive(
+                drive,
+                () -> controller.translationalAxisY().getAsDouble(),
+                () -> controller.translationalAxisX().getAsDouble(),
+                () -> -controller.rotationalAxisX().getAsDouble()));
 
-        /* reset gyro heading manually (in case the vision does not work) */
-        driver.resetOdometryButton()
-                .onTrue(Commands.runOnce(
-                                () -> drive.setPose(new Pose2d(
-                                        drive.getPose().getTranslation(),
-                                        FieldMirroringUtils.getCurrentAllianceDriverStationFacing())),
-                                drive)
-                        .ignoringDisable(true));
+        // Lock to 0° when A button is held
+        // controller
+        //         .a()
+        //         .whileTrue(DriveCommands.joystickDriveAtAngle(
+        //                 drive, () -> -controller.getLeftY(), () -> -controller.getLeftX(), () -> new Rotation2d()));
 
-        /* lock chassis with x-formation */
-        driver.lockChassisWithXFormatButton().whileTrue(drive.lockChassisWithXFormation());
+        // controller
+        //         .lockToZeroAngle()
+        //         .whileTrue(DriveCommands.joystickDriveAtAngle(
+        //                 drive,
+        //                 () -> controller.translationalAxisY().getAsDouble(),
+        //                 () -> controller.translationalAxisX().getAsDouble(),
+        //                 () -> new Rotation2d(vision.getTargetX(1).getDegrees())));
+
+        // Switch to X pattern when X button is pressed
+        // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
+        controller.lockChassisWithXFormatButton().whileTrue(Commands.runOnce(drive::stopWithX, drive));
+
+        // Reset gyro / odometry
+        final Runnable resetOdometry = Constants.currentMode == Constants.Mode.SIM
+                ? () -> drive.resetOdometry(driveSimulation.getSimulatedDriveTrainPose())
+                : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
+        // controller.start().onTrue(Commands.runOnce(resetOdometry).ignoringDisable(true));
+        controller.resetOdometryButton().onTrue(Commands.runOnce(resetOdometry).ignoringDisable(true));
+        SmartDashboard.putNumber("Shooter Velocity (RPM)", -3000.0);
+        DoubleSupplier shooterVelocitySupplier = () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -3000.0);
+        controller
+                .startShooterMotorButton()
+                .onTrue(shooter.runShooterVelocity(shooterVelocitySupplier))
+                .onFalse(shooter.runShooterVelocity(0.0));
+
+        controller
+                .startFeederToShootButton()
+                .whileTrue(shooter.runFeederVelocity(2000).alongWith(arm.intakeCommand()))
+                .whileFalse(shooter.runFeederVelocity(0.0).alongWith(arm.intakeIdleCommand()));
+        // Auto-aiming binding
+        controller
+                .autoAlignToHubButton()
+                .whileTrue(DriveCommands.autoAim(
+                        drive,
+                        () -> controller.translationalAxisY().getAsDouble(),
+                        () -> controller.translationalAxisX().getAsDouble()));
+
+        controller.intakeButton().whileTrue(arm.intakeCommand());
+
+        viceController.leftBumper().onTrue(arm.armDroppingCommand());
+        viceController.rightBumper().onTrue(arm.armUprightCommand());
     }
 
     /**
@@ -307,65 +212,33 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autonomousCommand;
+        return autoChooser.get();
     }
 
-    public Command getTestCommand() {
-        return testChooser.getSelected().get();
+    public void resetSimulation() {
+        if (Constants.currentMode != Constants.Mode.SIM) return;
+
+        drive.resetOdometry(new Pose2d(3, 3, new Rotation2d()));
+        SimulatedArena.getInstance().resetFieldForAuto();
     }
 
-    public void updateFieldSimAndDisplay() {
-        if (driveSimulation == null) return;
+    public void updateSimulation() {
+        if (Constants.currentMode != Constants.Mode.SIM) return;
 
         SimulatedArena.getInstance().simulationPeriodic();
         Logger.recordOutput("FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
-        Logger.recordOutput(
-                "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
-        Logger.recordOutput(
-                "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+        Logger.recordOutput("FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
     }
 
-    private final Alert autoPlacementIncorrect = AlertsManager.create(
-            "Expected Autonomous robot placement position does not match reality, IS THE SELECTED AUTO CORRECT?",
-            Alert.AlertType.kWarning);
-    private final Alert lowBattery =
-            AlertsManager.create("Battery voltage 12.0, please keep it above 12.5V", Alert.AlertType.kInfo);
-    private static final double AUTO_PLACEMENT_TOLERANCE_METERS = 0.25;
-    private static final double AUTO_PLACEMENT_TOLERANCE_DEGREES = 5;
+    private boolean motorBrakeEnabled = false;
 
-    public void updateTelemetryAndLED() {
-        field.setRobotPose(
-                Robot.CURRENT_ROBOT_MODE == RobotMode.SIM
-                        ? driveSimulation.getSimulatedDriveTrainPose()
-                        : drive.getPose());
-        if (Robot.CURRENT_ROBOT_MODE == RobotMode.SIM)
-            field.getObject("Odometry").setPose(drive.getPose());
+    public void setMotorBrake(boolean brakeModeEnable) {
+        if (this.motorBrakeEnabled == brakeModeEnable) return;
+        System.out.println("Set motor brake: " + brakeModeEnable);
+        drive.setMotorBrake(brakeModeEnable);
+        arm.setIntakeMotorBrake(brakeModeEnable);
+        arm.setArmMotorBrake(brakeModeEnable);
 
-        Pose2d autoStartingPose =
-                FieldMirroringUtils.toCurrentAlliancePose(previouslySelectedAuto.getStartingPoseAtBlueAlliance());
-        Pose2d currentPose = RobotState.getInstance().getVisionPose();
-        Transform2d difference = autoStartingPose.minus(currentPose);
-        boolean autoPlacementIncorrectDetected = difference.getTranslation().getNorm() > AUTO_PLACEMENT_TOLERANCE_METERS
-                || Math.abs(difference.getRotation().getDegrees()) > AUTO_PLACEMENT_TOLERANCE_DEGREES;
-        // autoPlacementIncorrect.set(autoPlacementIncorrectDetected && DriverStation.isDisabled());
-        autoPlacementIncorrect.set(false);
-
-        double voltage = ConduitApi.getInstance().getPDPVoltage();
-        lowBattery.setText(String.format(
-                "Battery voltage: %.1fV, please try to keep it above 12.5V before going on field", voltage));
-        lowBattery.set(DriverStation.isDisabled() && voltage < 12.5);
-
-        AlertsManager.updateLEDAndLog(ledStatusLight);
-    }
-
-    public static boolean motorBrakeEnabled = false;
-
-    public void setMotorBrake(boolean brakeModeEnabled) {
-        if (motorBrakeEnabled == brakeModeEnabled) return;
-
-        System.out.println("Set motor brake: " + brakeModeEnabled);
-        drive.setMotorBrake(brakeModeEnabled);
-
-        motorBrakeEnabled = brakeModeEnabled;
+        this.motorBrakeEnabled = brakeModeEnable;
     }
 }
