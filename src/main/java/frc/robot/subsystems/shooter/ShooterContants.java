@@ -48,18 +48,16 @@ public final class ShooterContants {
     // false
     //         });
     public static final ShooterHardwareConstants SHOOTERHARDWARE_CONSTANTS = new ShooterHardwareConstants(
-            new int[] {17, 14, 16}, new boolean[] {false, false, false}, new int[] {12, 15}, new boolean[] {false, true
+            new int[] {17, 14, 16}, new boolean[] {false, false, false}, new int[] {12, 15}, new boolean[] {true, true
             });
 
     // Subshooter configuration (independently controlled motor)
     public static final int SUBSHOOTER_MOTOR_ID = 18;
-    public static final boolean SUBSHOOTER_MOTOR_INVERTED = true;
+    public static final boolean SUBSHOOTER_MOTOR_INVERTED = false;
 
     // Subshooter RPM offset (relative to shooter base RPM)
     // Positive: subshooter faster than shooter, Negative: subshooter slower than shooter
-    public static final double SUBSHOOTER_RPM_OFFSET = -500.0;
-
-    
+    public static final double SUBSHOOTER_RPM_OFFSET = -1.2;
 
     // Default voltage settings matching previous configuration
     public static final VoltageSettings VOLTAGE_SETTINGS =

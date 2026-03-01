@@ -29,8 +29,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.drive.HubAlignmentCommands;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.arm.Arm;
-import frc.robot.subsystems.arm.ArmIOReal;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIOReal;
@@ -53,7 +51,7 @@ public class RobotContainer {
     private SwerveDriveSimulation driveSimulation = null;
 
     public Shooter shooter;
-    public Arm arm;
+    //     public Arm arm;
 
     // Controller
     //     private final CommandXboxController controller = new CommandXboxController(0);
@@ -79,7 +77,7 @@ public class RobotContainer {
                         drive,
                         new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation),
                         new VisionIOLimelight(VisionConstants.camera1Name, drive::getRotation));
-                arm = new Arm(new ArmIOReal());
+                // arm = new Arm(new ArmIOReal());
                 break;
 
             case SIM:
@@ -117,7 +115,7 @@ public class RobotContainer {
         }
 
         shooter = new Shooter(new ShooterIOReal());
-        arm = new Arm(new ArmIOReal());
+        // arm = new Arm(new ArmIOReal());
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -192,8 +190,8 @@ public class RobotContainer {
 
         controller
                 .startFeederToShootButton()
-                .whileTrue(shooter.runFeederVelocity(2000).alongWith(arm.intakeCommand()))
-                .whileFalse(shooter.runFeederVelocity(0.0).alongWith(arm.intakeIdleCommand()));
+                .whileTrue(shooter.runFeederVelocity(-2000)) // .alongWith(arm.intakeCommand()))
+                .whileFalse(shooter.runFeederVelocity(0.0)); // .alongWith(arm.intakeIdleCommand()));
         // Auto-aiming binding with vision (uses AprilTag detection)
         controller
                 .autoAlignToHubButton()
@@ -204,10 +202,10 @@ public class RobotContainer {
                         () -> controller.translationalAxisX().getAsDouble(),
                         DriveCommands.BLUE_TARGET_POSITION));
 
-        controller.intakeButton().whileTrue(arm.intakeCommand()).whileFalse(arm.intakeIdleCommand());
+        // controller.intakeButton().whileTrue(arm.intakeCommand()).whileFalse(arm.intakeIdleCommand());
 
-        viceController.leftBumper().onTrue(arm.armDroppingCommand());
-        viceController.rightBumper().onTrue(arm.armUprightCommand());
+        // viceController.leftBumper().onTrue(arm.armDroppingCommand());
+        // viceController.rightBumper().onTrue(arm.armUprightCommand());
     }
 
     /**
@@ -240,8 +238,8 @@ public class RobotContainer {
         if (this.motorBrakeEnabled == brakeModeEnable) return;
         System.out.println("Set motor brake: " + brakeModeEnable);
         drive.setMotorBrake(brakeModeEnable);
-        arm.setIntakeMotorBrake(brakeModeEnable);
-        arm.setArmMotorBrake(brakeModeEnable);
+        // arm.setIntakeMotorBrake(brakeModeEnable);
+        // arm.setArmMotorBrake(brakeModeEnable);
 
         this.motorBrakeEnabled = brakeModeEnable;
     }
