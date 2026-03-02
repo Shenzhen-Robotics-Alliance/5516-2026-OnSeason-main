@@ -43,9 +43,21 @@ public final class ShooterContants {
     //             false, false
     //         });
     // For Team 6414 (alternate):
+    // public static final ShooterHardwareConstants SHOOTERHARDWARE_CONSTANTS = new ShooterHardwareConstants(
+    //         new int[] {14, 15, 16}, new boolean[] {false, false, false}, new int[] {18, 19}, new boolean[] {false,
+    // false
+    //         });
     public static final ShooterHardwareConstants SHOOTERHARDWARE_CONSTANTS = new ShooterHardwareConstants(
-            new int[] {14, 15, 16}, new boolean[] {false, false, false}, new int[] {18, 19}, new boolean[] {false, false
+            new int[] {17, 14, 16}, new boolean[] {false, false, false}, new int[] {12, 15}, new boolean[] {true, true
             });
+
+    // Subshooter configuration (independently controlled motor)
+    public static final int SUBSHOOTER_MOTOR_ID = 18;
+    public static final boolean SUBSHOOTER_MOTOR_INVERTED = false;
+
+    // Subshooter RPM offset (relative to shooter base RPM)
+    // Positive: subshooter faster than shooter, Negative: subshooter slower than shooter
+    public static final double SUBSHOOTER_RPM_OFFSET = -1.2;
 
     // Default voltage settings matching previous configuration
     public static final VoltageSettings VOLTAGE_SETTINGS =
@@ -64,6 +76,7 @@ public final class ShooterContants {
 
     // Maximum RPM for shooter and feeder
     public static final double MAX_SHOOTER_RPM = 6000.0;
+
     public static final double MAX_FEEDER_RPM = 3000.0;
 
     // Voltage settings for backward compatibility

@@ -17,6 +17,7 @@ public class Shooter extends SubsystemBase {
     // Dynamic alerts based on motor count
     private Alert[] shooterMotorAlerts;
     private Alert[] feederMotorAlerts;
+    private Alert[] subshooterMotorAlerts;
 
     public Shooter(ShooterIO io) {
         this.io = io;
@@ -25,6 +26,7 @@ public class Shooter extends SubsystemBase {
         // Initialize alerts arrays (will be populated in periodic based on actual motor count)
         shooterMotorAlerts = new Alert[0];
         feederMotorAlerts = new Alert[0];
+        subshooterMotorAlerts = new Alert[0];
     }
 
     public boolean hardwareOK() {
@@ -101,6 +103,18 @@ public class Shooter extends SubsystemBase {
         if (inputs.feederMotorsVelocityRPM != null && inputs.feederMotorsVelocityRPM.length > 0) {
             Logger.recordOutput("Feeder/AverageVelocityRPM", calculateAverageVelocity(inputs.feederMotorsVelocityRPM));
         }
+
+        // Log subshooter data
+        if (inputs.subshootersConnected != null) {
+            for (int i = 0; i < inputs.subshootersConnected.length; i++) {
+                Logger.recordOutput("SubshooterMotor" + (i + 1) + "/connected", inputs.subshootersConnected[i]);
+            }
+        }
+
+        if (inputs.subshooterMotorsVelocityRPM != null && inputs.subshooterMotorsVelocityRPM.length > 0) {
+            Logger.recordOutput(
+                    "Subshooter/AverageVelocityRPM", calculateAverageVelocity(inputs.subshooterMotorsVelocityRPM));
+        }
     }
 
     private void updateAlerts() {
@@ -155,6 +169,11 @@ public class Shooter extends SubsystemBase {
         io.setFeederVelocity(rpm);
     }
 
+    private void setShooterWithSubshooter(double baseRPM) {
+        if (!hardwareOK()) baseRPM = 0;
+        io.setShooterWithSubshooter(baseRPM);
+    }
+
     private void executeIdle() {
         setShooterMotorVolts(0.0);
         setFeederMotorVolts(0.0);
@@ -188,5 +207,25 @@ public class Shooter extends SubsystemBase {
 
     public Command runIdle() {
         return runShooter(0).alongWith(runFeeder(0));
+    }
+
+    /**
+     * Shooter control with differential speed shooter set to baseRPM, subshooter set to baseRPM + SUBSHOOTER_RPM_OFFSET
+     *
+     * @param baseRPM base speed (shooter speed)
+     * @return Command
+     */
+    public Command runShooterWithSubshooter(double baseRPM) {
+        return run(() -> setShooterWithSubshooter(baseRPM));
+    }
+
+    /**
+     * Shooter control with differential speed (dynamic RPM)
+     *
+     * @param baseRPMSupplier base speed supplier
+     * @return Command
+     */
+    public Command runShooterWithSubshooter(DoubleSupplier baseRPMSupplier) {
+        return run(() -> setShooterWithSubshooter(baseRPMSupplier.getAsDouble()));
     }
 }

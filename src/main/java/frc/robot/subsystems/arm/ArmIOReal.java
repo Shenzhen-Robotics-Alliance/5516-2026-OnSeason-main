@@ -41,7 +41,7 @@ public class ArmIOReal implements ArmIO {
     //     private final DutyCycleEncoder absoluteEncoder;
     private final CANcoder absoluteEncoder;
 
-    private final VelocityVoltage intakeVelocityRequest = new VelocityVoltage(0);
+    private VelocityVoltage intakeVelocityRequest = new VelocityVoltage(0);
 
     // CTRE Motor Signals
     private final StatusSignal<Angle> absoluteEncoderAngle;
@@ -154,7 +154,7 @@ public class ArmIOReal implements ArmIO {
 
     @Override
     public void setArmMotorOutput(Voltage voltage) {
-        voltageOut.withOutput(voltage);
+        voltageOut = voltageOut.withOutput(voltage);
         armTalon.setControl(voltageOut);
     }
 
@@ -166,7 +166,7 @@ public class ArmIOReal implements ArmIO {
 
     @Override
     public void setIntakeMotorOutput(Voltage voltage) {
-        voltageOut.withOutput(voltage);
+        voltageOut = voltageOut.withOutput(voltage);
         intakeTalon.setControl(voltageOut);
     }
 
@@ -179,7 +179,7 @@ public class ArmIOReal implements ArmIO {
     @Override
     public void setIntakeMotorVelocity(double rpm) {
         double rps = rpm / 60.0;
-        intakeVelocityRequest.withVelocity(rps);
+        intakeVelocityRequest = intakeVelocityRequest.withVelocity(rps);
         intakeTalon.setControl(intakeVelocityRequest);
     }
 }

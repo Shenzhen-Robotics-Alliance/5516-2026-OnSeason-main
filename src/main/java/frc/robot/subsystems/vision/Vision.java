@@ -20,6 +20,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -61,6 +62,107 @@ public class Vision extends SubsystemBase {
      */
     public Rotation2d getTargetX(int cameraIndex) {
         return inputs[cameraIndex].latestTargetObservation.tx();
+    }
+
+    /**
+     * Returns the visible AprilTag IDs from all cameras.
+     *
+     * @return Array of visible tag IDs
+     */
+    public int[] getVisibleTagIds() {
+        return inputs[0].tagIds;
+    }
+
+    /**
+     * Returns the visible AprilTag IDs from a specific camera.
+     *
+     * @param cameraIndex The index of the camera to use.
+     * @return Array of visible tag IDs from that camera
+     */
+    public int[] getVisibleTagIds(int cameraIndex) {
+        return inputs[cameraIndex].tagIds;
+    }
+
+    /**
+     * Returns the 3D pose of a specific AprilTag if it's visible.
+     *
+     * @param tagId The AprilTag ID to look for
+     * @return Optional containing the tag pose if visible
+     */
+    public java.util.Optional<Pose3d> getTagPose(int tagId) {
+        // Check all cameras for this tag
+        for (var input : inputs) {
+            for (int id : input.tagIds) {
+                if (id == tagId) {
+                    return aprilTagLayout.getTagPose(tagId);
+                }
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * Returns the position of the best visible hub tag for the current alliance. For 2026 Reefscape: Blue uses tags 18,
+     * 19, 20, 21, 24, 25, 26, 27; Red uses tags 2, 3, 4, 5, 8, 9, 10
+     *
+     * <p>Selection priority: 1. Lowest ambiguity (highest confidence), 2. Nearest distance
+     *
+     * @param isRedAlliance True if red alliance
+     * @return Optional containing the hub position if visible
+     */
+    public java.util.Optional<Translation2d> getVisibleHubPosition(boolean isRedAlliance) {
+        // Hub tag IDs for 2026
+        int[] blueHubTags = {18, 19, 20, 21, 24, 25, 26, 27}; // Front and back tags for blue
+        int[] redHubTags = {2, 3, 4, 5, 8, 9, 10}; // Front and back tags for red
+
+        int[] hubTags = isRedAlliance ? redHubTags : blueHubTags;
+
+        // Find the best hub tag based on confidence (lowest ambiguity)
+        // Priority: 1. Lowest ambiguity (highest confidence), 2. Nearest distance
+        double bestScore = Double.MAX_VALUE; // Lower is better
+        java.util.Optional<Translation2d> bestPosition = java.util.Optional.empty();
+
+        // Only use the first camera
+        if (inputs[0].poseObservations.length > 0) {
+            var robotPose = inputs[0].poseObservations[0].pose();
+            int[] visibleTagIds = inputs[0].tagIds;
+
+            // Get ambiguity from the first pose observation
+            double ambiguity = inputs[0].poseObservations[0].ambiguity();
+
+            for (int tagId : visibleTagIds) {
+                // Check if this tag is a hub tag
+                boolean isHubTag = false;
+                for (int hubTagId : hubTags) {
+                    if (tagId == hubTagId) {
+                        isHubTag = true;
+                        break;
+                    }
+                }
+
+                if (isHubTag) {
+                    var tagPose = aprilTagLayout.getTagPose(tagId);
+                    if (tagPose.isPresent()) {
+                        double distance = tagPose.get()
+                                .toPose2d()
+                                .getTranslation()
+                                .getDistance(robotPose.toPose2d().getTranslation());
+
+                        // Score: lower ambiguity is better, then lower distance
+                        // Use ambiguity * 10 + distance as combined score
+                        double score = ambiguity;
+
+                        if (score < bestScore) {
+                            bestScore = score;
+                            bestPosition = java.util.Optional.of(
+                                    tagPose.get().toPose2d().getTranslation());
+                        }
+                    }
+                }
+            }
+        }
+
+        return bestPosition;
     }
 
     @Override
