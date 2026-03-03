@@ -228,4 +228,17 @@ public class Shooter extends SubsystemBase {
     public Command runShooterWithSubshooter(DoubleSupplier baseRPMSupplier) {
         return run(() -> setShooterWithSubshooter(baseRPMSupplier.getAsDouble()));
     }
+
+    /**
+     * Checks whether the shooter wheel average speed has reached the target speed.
+     *
+     * <p>Uses absolute value comparison so target sign conventions do not affect readiness check.
+     */
+    public boolean isShooterAtSpeed(double targetRpm, double toleranceRpm) {
+        if (!hardwareOK()) return false;
+        if (inputs.shooterMotorsVelocityRPM == null || inputs.shooterMotorsVelocityRPM.length == 0) return false;
+
+        double averageShooterRpm = calculateAverageVelocity(inputs.shooterMotorsVelocityRPM);
+        return Math.abs(Math.abs(averageShooterRpm) - Math.abs(targetRpm)) <= Math.abs(toleranceRpm);
+    }
 }

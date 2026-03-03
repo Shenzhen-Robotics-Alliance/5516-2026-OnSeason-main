@@ -38,6 +38,8 @@ public interface DriverMap extends Subsystem {
 
     Trigger startFeederToShootButton();
 
+    Trigger spitOutButton();
+
     DoubleSupplier translationalAxisX();
 
     DoubleSupplier translationalAxisY();
@@ -129,6 +131,11 @@ public interface DriverMap extends Subsystem {
         @Override
         public Trigger startFeederToShootButton() {
             return xboxController.rightTrigger(0.5);
+        }
+
+        @Override
+        public Trigger spitOutButton() {
+            return xboxController.back();
         }
 
         @Override
@@ -244,6 +251,11 @@ public interface DriverMap extends Subsystem {
         @Override
         public Trigger startFeederToShootButton() {
             return ps5Controller.R2();
+        }
+
+        @Override
+        public Trigger spitOutButton() {
+            return ps5Controller.create();
         }
 
         @Override

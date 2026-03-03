@@ -262,9 +262,39 @@ public class Arm extends SubsystemBase {
         return moveToPosition(ARM_STARTING_ANGLE);
     }
 
+    /**
+     * Holds the arm at intake position while continuously running intake.
+     *
+     * <p>Used for hold-to-intake trigger behavior.
+     */
+    public Command holdIntakePositionAndRunIntake() {
+        return run(() -> {
+            requestPosition(ARM_INTAKING_ANGLE);
+            io.setIntakeMotorOutput(INTAKE_VOLTAGE);
+        });
+    }
+
+    /**
+     * Moves the arm back to starting position and stops intake.
+     *
+     * <p>Used for trigger-release behavior after intake.
+     */
+    public Command moveToStartingPositionAndStopIntake() {
+        return run(() -> {
+                    requestPosition(ARM_STARTING_ANGLE);
+                    io.setIntakeMotorOutput(Volts.zero());
+                })
+                .until(() -> atReference(ARM_STARTING_ANGLE));
+    }
+
     public Command intakeCommand() {
         // Intake should use its own voltage target instead of the arm voltage limit.
         return run(() -> io.setIntakeMotorOutput(INTAKE_VOLTAGE));
+    }
+
+    public Command outtakeCommand() {
+        // Reverse intake direction to eject game pieces.
+        return run(() -> io.setIntakeMotorOutput(Volts.of(-INTAKE_VOLTAGE.in(Volts))));
     }
 
     public Command intakeIdleCommand() {

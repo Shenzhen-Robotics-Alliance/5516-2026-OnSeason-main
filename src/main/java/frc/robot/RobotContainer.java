@@ -14,6 +14,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.subsystems.shooter.ShooterContants.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -24,7 +25,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.drive.HubAlignmentCommands;
@@ -58,7 +58,6 @@ public class RobotContainer {
     // Controller
     //     private final CommandXboxController controller = new CommandXboxController(0);
     public final DriverMap controller = new DriverMap.LeftHandedXbox(0);
-    public final CommandXboxController viceController = new CommandXboxController(1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
@@ -192,8 +191,19 @@ public class RobotContainer {
 
         controller
                 .startFeederToShootButton()
-                .whileTrue(shooter.runFeederVelocity(-2000).alongWith(arm.intakeCommand()))
-                .whileFalse(shooter.runFeederVelocity(0.0).alongWith(arm.intakeIdleCommand()));
+                // Hold right trigger: spin up shooter first, then start feeder after shooter reaches target speed.
+                .whileTrue(shooter.runShooterWithSubshooter(shooterVelocitySupplier)
+                        .alongWith(Commands.waitUntil(() -> shooter.isShooterAtSpeed(
+                                        shooterVelocitySupplier.getAsDouble(), SHOOTER_READY_TOLERANCE_RPM))
+                                .andThen(shooter.runFeederVelocity(FEEDER_SHOOT_RPM))))
+                // Release right trigger: stop both shooter and feeder immediately.
+                .onFalse(shooter.runShooterWithSubshooter(0.0).alongWith(shooter.runFeederVelocity(0.0)));
+
+        controller
+                // Hold back: reverse feeder and intake to eject game pieces.
+                .spitOutButton()
+                .whileTrue(shooter.runFeederVelocity(FEEDER_OUTTAKE_RPM).alongWith(arm.outtakeCommand()))
+                .onFalse(shooter.runFeederVelocity(0.0).alongWith(arm.intakeIdleCommand()));
         // Auto-aiming binding with vision (uses AprilTag detection)
         controller
                 .autoAlignToHubButton()
@@ -204,10 +214,16 @@ public class RobotContainer {
                         () -> controller.translationalAxisX().getAsDouble(),
                         DriveCommands.BLUE_TARGET_POSITION));
 
-        controller.intakeButton().whileTrue(arm.intakeCommand()).whileFalse(arm.intakeIdleCommand());
+        controller
+                // Hold left trigger: move arm to intake position and keep intake spinning.
+                .intakeButton()
+                .whileTrue(arm.holdIntakePositionAndRunIntake())
+                // Release left trigger: move arm back to starting position and stop intake.
+                .onFalse(arm.moveToStartingPositionAndStopIntake());
 
-        viceController.leftBumper().onTrue(arm.armDroppingCommand());
-        viceController.rightBumper().onTrue(arm.armUprightCommand());
+        // Keep manual arm position controls on driver controller only.
+        controller.povDown().onTrue(arm.armDroppingCommand());
+        controller.povUp().onTrue(arm.armUprightCommand());
     }
 
     /**
