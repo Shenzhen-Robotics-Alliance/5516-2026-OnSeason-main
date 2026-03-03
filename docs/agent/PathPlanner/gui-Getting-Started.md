@@ -12,8 +12,7 @@ If using one of the manual installs released on GitHub, the app will still notif
 ## Open a Project
 
 ![](starting_page.png)
-
-When first opening the app, you will be greeted with the starting page. Click the "Open Robot Project" to select the
+ When first opening the app, you will be greeted with the starting page. Click the "Open Robot Project" to select the
 project you wish to use PathPlanner in.
 
 The folder you should select should be the root directory of your robot code project.

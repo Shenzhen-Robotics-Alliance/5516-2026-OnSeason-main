@@ -178,7 +178,7 @@ public class ArmIOReal implements ArmIO {
 
     @Override
     public void setIntakeMotorVelocity(double rpm) {
-        double rps = rpm / 60.0;
+        double rps = rpm / 15.0;
         intakeVelocityRequest = intakeVelocityRequest.withVelocity(rps);
         intakeTalon.setControl(intakeVelocityRequest);
     }

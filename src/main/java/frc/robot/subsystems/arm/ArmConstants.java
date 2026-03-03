@@ -4,18 +4,19 @@ import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.*;
+import frc.robot.subsystems.arm.ArmConstants.ArmPIDConstants;
 
 public final class ArmConstants {
     public static final Current ARM_CURRENT_LIMIT = Amps.of(20.0);
     public static final Voltage ARM_MAX_VOLTAGE = Volts.of(4.0);
 
     public static final Current INTAKE_CURRENT_LIMIT = Amps.of(30);
-    public static final Voltage INTAKE_MAX_VOLTAGE = Volts.of(8.0);
-    public static final Voltage INTAKE_VOLTAGE = Volts.of(5.0);
-    public static final double INTAKE_VELOCITY = 2500;
+    public static final Voltage INTAKE_MAX_VOLTAGE = Volts.of(23.0);
+    public static final Voltage INTAKE_VOLTAGE = Volts.of(14.0);
+    public static final double INTAKE_VELOCITY = 7500;
     // The setpoint angle for arm to intake from ground
-    public static final Angle ARM_INTAKING_ANGLE = Degrees.of(10);
-    public static final Angle ARM_STARTING_ANGLE = Degrees.of(90);
+    public static final Angle ARM_STARTING_ANGLE = Degrees.of(140); // upper
+    public static final Angle ARM_INTAKING_ANGLE = Degrees.of(10); // lower
 
     public record ArmHardwareConstants(
             Distance ARM_COM_LENGTH,
@@ -35,14 +36,14 @@ public final class ArmConstants {
             boolean INTAKE_MOTOR_INVERTED) {}
 
     public static final ArmHardwareConstants HARDWARE_CONSTANTS = new ArmHardwareConstants(
-            Centimeters.of(33),
-            Kilograms.of(3.0),
+            Centimeters.of(38),
+            Kilograms.of(2.5),
             DCMotor.getKrakenX60(1),
             48 * 32 / 18,
             // Following data need to be measured on real Robot
-            Degrees.of(90), //
-            Degrees.of(0), // intake
-            Rotation.of(0.1),
+            Degrees.of(150), // upper
+            Degrees.of(0), // lower
+            Rotation.of(0.215),
             Rotation.of(0),
             22,
             true,
@@ -63,11 +64,11 @@ public final class ArmConstants {
 
     public static final ArmPIDConstants PID_CONSTANTS = new ArmPIDConstants(
             0.05,
-            0.14,
+            0.28, // 0.11
             1.61,
-            0.04,
-            6.0 / Math.toRadians(30),
+            0.015, // 0.01
+            2.1 / Math.toRadians(30), // 6 / Math.toRadians(30)
             RotationsPerSecond.of(1),
             RotationsPerSecondPerSecond.of(5),
-            Degrees.of(3));
+            Degrees.of(3.2));
 }
