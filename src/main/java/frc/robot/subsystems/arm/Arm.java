@@ -263,7 +263,8 @@ public class Arm extends SubsystemBase {
     }
 
     public Command intakeCommand() {
-        return run(() -> io.setIntakeMotorOutput(ARM_MAX_VOLTAGE));
+        // Intake should use its own voltage target instead of the arm voltage limit.
+        return run(() -> io.setIntakeMotorOutput(INTAKE_VOLTAGE));
     }
 
     public Command intakeIdleCommand() {
