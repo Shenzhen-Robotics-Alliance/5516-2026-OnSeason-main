@@ -262,6 +262,27 @@ public class Arm extends SubsystemBase {
         return moveToPosition(ARM_STARTING_ANGLE);
     }
 
+    /** Toggles arm setpoint between starting position and intake position. */
+    public Command toggleArmPositionCommand() {
+        return runOnce(() -> {
+            if (isIntakePositionRequested()) {
+                requestPosition(ARM_STARTING_ANGLE);
+            } else {
+                requestPosition(ARM_INTAKING_ANGLE);
+            }
+        });
+    }
+
+    /** Returns whether the current requested setpoint is intake position. */
+    public boolean isIntakePositionRequested() {
+        return Math.abs(setpoint.in(Degrees) - ARM_INTAKING_ANGLE.in(Degrees)) < 1e-6;
+    }
+
+    /** Returns whether arm mechanism is currently at intake position. */
+    public boolean isAtIntakePosition() {
+        return trulyAtReference(ARM_INTAKING_ANGLE);
+    }
+
     /**
      * Holds the arm at intake position while continuously running intake.
      *

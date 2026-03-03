@@ -1,16 +1,3 @@
-// Copyright 2021-2025 FRC 6328
-// http://github.com/Mechanical-Advantage
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// version 3 as published by the Free Software Foundation or
-// available in the root directory of this project.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Threads;
@@ -23,11 +10,6 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-/**
- * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as
- * described in the TimedRobot documentation. If you change the name of this class or the package after creating this
- * project, you must also update the build.gradle file in the project.
- */
 public class Robot extends LoggedRobot {
     private Command autonomousCommand;
     private RobotContainer robotContainer;
@@ -76,8 +58,6 @@ public class Robot extends LoggedRobot {
         // Start AdvantageKit logger
         Logger.start();
 
-        // Instantiate our RobotContainer. This will perform all our button bindings,
-        // and put our autonomous chooser on the dashboard.
         robotContainer = new RobotContainer();
     }
 
@@ -87,11 +67,6 @@ public class Robot extends LoggedRobot {
         // Switch thread to high priority to improve loop timing
         Threads.setCurrentThreadPriority(true, 99);
 
-        // Runs the Scheduler. This is responsible for polling buttons, adding
-        // newly-scheduled commands, running already-scheduled commands, removing
-        // finished or interrupted commands, and running subsystem periodic() methods.
-        // This must be called from the robot's periodic block in order for anything in
-        // the Command-based framework to work.
         CommandScheduler.getInstance().run();
 
         // Return to normal thread priority
@@ -135,11 +110,9 @@ public class Robot extends LoggedRobot {
         }
     }
 
-    /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {}
 
-    /** This function is called once when test mode is enabled. */
     @Override
     public void testInit() {
         // Cancels all running commands at the start of test mode.

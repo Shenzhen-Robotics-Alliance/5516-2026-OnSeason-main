@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.drive.HubAlignmentCommands;
@@ -185,24 +186,25 @@ public class RobotContainer {
         SmartDashboard.putNumber("Shooter Velocity (RPM)", -2800.0);
         DoubleSupplier shooterVelocitySupplier = () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -2800.0);
         controller
+                // Press left bumper once to toggle arm between start and intake positions.
                 .startShooterMotorButton()
-                .onTrue(shooter.runShooterWithSubshooter(shooterVelocitySupplier))
-                .onFalse(shooter.runShooterWithSubshooter(0.0));
+                .onTrue(arm.toggleArmPositionCommand());
 
         controller
                 .startFeederToShootButton()
                 // Hold right trigger: spin up shooter first, then start feeder after shooter reaches target speed.
-                .whileTrue(shooter.runShooterWithSubshooter(shooterVelocitySupplier)
-                        .alongWith(Commands.waitUntil(() -> shooter.isShooterAtSpeed(
-                                        shooterVelocitySupplier.getAsDouble(), SHOOTER_READY_TOLERANCE_RPM))
-                                .andThen(shooter.runFeederVelocity(FEEDER_SHOOT_RPM))))
+                .whileTrue(shooter.runShooterThenFeeder(
+                        shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM))
                 // Release right trigger: stop both shooter and feeder immediately.
-                .onFalse(shooter.runShooterWithSubshooter(0.0).alongWith(shooter.runFeederVelocity(0.0)));
+                .onFalse(shooter.stopAllShooterMotors());
 
+        Trigger outtakeEnabledTrigger = controller.spitOutButton().and(new Trigger(arm::isAtIntakePosition));
+        outtakeEnabledTrigger
+                // Hold back: reverse feeder and intake to eject game pieces only at intake position.
+                .whileTrue(shooter.runFeederVelocity(FEEDER_OUTTAKE_RPM).alongWith(arm.outtakeCommand()));
         controller
-                // Hold back: reverse feeder and intake to eject game pieces.
                 .spitOutButton()
-                .whileTrue(shooter.runFeederVelocity(FEEDER_OUTTAKE_RPM).alongWith(arm.outtakeCommand()))
+                // Always stop eject motors when back is released.
                 .onFalse(shooter.runFeederVelocity(0.0).alongWith(arm.intakeIdleCommand()));
         // Auto-aiming binding with vision (uses AprilTag detection)
         controller
@@ -215,11 +217,10 @@ public class RobotContainer {
                         DriveCommands.BLUE_TARGET_POSITION));
 
         controller
-                // Hold left trigger: move arm to intake position and keep intake spinning.
+                // Hold left trigger: run intake only. Release to stop intake.
                 .intakeButton()
-                .whileTrue(arm.holdIntakePositionAndRunIntake())
-                // Release left trigger: move arm back to starting position and stop intake.
-                .onFalse(arm.moveToStartingPositionAndStopIntake());
+                .whileTrue(arm.intakeCommand())
+                .onFalse(arm.intakeIdleCommand());
 
         // Keep manual arm position controls on driver controller only.
         controller.povDown().onTrue(arm.armDroppingCommand());

@@ -230,6 +230,36 @@ public class Shooter extends SubsystemBase {
     }
 
     /**
+     * Hold-to-shoot command: keep shooter spinning, and only enable feeder after shooter reaches speed.
+     *
+     * @param shooterRpmSupplier shooter target RPM supplier
+     * @param feederRpm feeder RPM once shooter is ready
+     * @param shooterReadyToleranceRpm shooter ready tolerance (RPM)
+     * @return command requiring only this subsystem
+     */
+    public Command runShooterThenFeeder(
+            DoubleSupplier shooterRpmSupplier, double feederRpm, double shooterReadyToleranceRpm) {
+        return run(() -> {
+            double shooterTargetRpm = shooterRpmSupplier.getAsDouble();
+            setShooterWithSubshooter(shooterTargetRpm);
+
+            if (isShooterAtSpeed(shooterTargetRpm, shooterReadyToleranceRpm)) {
+                setFeederVelocity(feederRpm);
+            } else {
+                setFeederVelocity(0.0);
+            }
+        });
+    }
+
+    /** Stops shooter, subshooter, and feeder together in one command. */
+    public Command stopAllShooterMotors() {
+        return run(() -> {
+            setShooterWithSubshooter(0.0);
+            setFeederVelocity(0.0);
+        });
+    }
+
+    /**
      * Checks whether the shooter wheel average speed has reached the target speed.
      *
      * <p>Uses absolute value comparison so target sign conventions do not affect readiness check.
