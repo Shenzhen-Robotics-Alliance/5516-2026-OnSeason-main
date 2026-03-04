@@ -1,0 +1,103 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.79900346486154,
+        "y": 4.042016077424754
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 7.995719447123234,
+        "y": 3.8877344442897073
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.592770402979478,
+        "y": 5.1
+      },
+      "prevControl": {
+        "x": 7.735443447029152,
+        "y": 4.1471809382969935
+      },
+      "nextControl": {
+        "x": 6.024775737207752,
+        "y": 5.573622920669337
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.619096226061378,
+        "y": 5.4298370533704405
+      },
+      "prevControl": {
+        "x": 4.868877836438911,
+        "y": 5.41938970360093
+      },
+      "nextControl": {
+        "x": 4.1693156983101565,
+        "y": 5.448649545154081
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.8685450824057686,
+        "y": 4.87385419790978
+      },
+      "prevControl": {
+        "x": 3.2102257375866365,
+        "y": 5.086500061439461
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.0,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 0.0,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 0.0,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 2.0,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 143.8413479043164
+  },
+  "reversed": false,
+  "folder": "DepoSideCenterNeutral",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

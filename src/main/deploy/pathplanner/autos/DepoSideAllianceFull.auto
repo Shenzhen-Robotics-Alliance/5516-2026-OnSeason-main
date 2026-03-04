@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "deploy and start intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepoSideAllianceFull1-4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepoSideAllianceFull4-5"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "DepoSideAllianceFull5-6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

@@ -1,0 +1,61 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "OutpostSideAllianceFull1-2"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 3.0
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "OutpostSideAllianceFull2-4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "deploy"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "OutpostSideAllianceFull4-5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "start intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "OutpostSideAllianceFull5-6"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
