@@ -6,8 +6,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 /**
- * Moving-shot calculator based on the FTC "Hood Angle and Velocity Calcs" document.
- * Units: meters, meters/sec, radians.
+ * Moving-shot calculator based on the FTC "Hood Angle and Velocity Calcs" document. Units: meters, meters/sec, radians.
  */
 public final class SotfMovingShotCalculator {
     public static final class Config {
@@ -112,10 +111,7 @@ public final class SotfMovingShotCalculator {
     private SotfMovingShotCalculator() {}
 
     public static Result solve(
-            Pose2d robotPose,
-            ChassisSpeeds robotVelocity,
-            Translation2d targetPosition,
-            Config cfg) {
+            Pose2d robotPose, ChassisSpeeds robotVelocity, Translation2d targetPosition, Config cfg) {
         if (robotPose == null || targetPosition == null || cfg == null) {
             return Result.invalid("null input", Double.NaN);
         }
@@ -167,8 +163,7 @@ public final class SotfMovingShotCalculator {
         double vY = v0 * Math.sin(alpha);
 
         double compensatedAngle = Math.atan2(vY, vXNew);
-        double clampedAngle = MathUtil.clamp(
-                compensatedAngle, cfg.minLaunchAngleRad, cfg.maxLaunchAngleRad);
+        double clampedAngle = MathUtil.clamp(compensatedAngle, cfg.minLaunchAngleRad, cfg.maxLaunchAngleRad);
 
         double xNew = vXNew * t;
         double tanClamped = Math.tan(clampedAngle);
@@ -177,8 +172,8 @@ public final class SotfMovingShotCalculator {
             return Result.invalid("invalid compensated denom", distance);
         }
 
-        double v0New = Math.sqrt(
-                cfg.gravity * xNew * xNew / (2.0 * Math.cos(clampedAngle) * Math.cos(clampedAngle) * denom2));
+        double v0New =
+                Math.sqrt(cfg.gravity * xNew * xNew / (2.0 * Math.cos(clampedAngle) * Math.cos(clampedAngle) * denom2));
         if (!isFinite(v0New)) {
             return Result.invalid("invalid v0New", distance);
         }

@@ -75,10 +75,11 @@ public class RobotContainer {
                         new ModuleIOTalonFX(TunerConstants.BackLeft),
                         new ModuleIOTalonFX(TunerConstants.BackRight),
                         (robotPose) -> {});
+
                 vision = new Vision(
                         drive,
-                        new VisionIOLimelight(VisionConstants.camera0Name, drive::getRotation),
-                        new VisionIOLimelight(VisionConstants.camera1Name, drive::getRotation));
+                        new VisionIOPhotonVision(VisionConstants.camera0Name, VisionConstants.robotToCamera0),
+                        new VisionIOPhotonVision(VisionConstants.camera1Name, VisionConstants.robotToCamera1));                   
                 arm = new Arm(new ArmIOReal());
                 break;
 
