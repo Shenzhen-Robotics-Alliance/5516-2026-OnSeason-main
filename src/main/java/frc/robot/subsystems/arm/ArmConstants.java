@@ -15,8 +15,8 @@ public final class ArmConstants {
     public static final Voltage INTAKE_VOLTAGE = Volts.of(6.8);
     public static final double INTAKE_VELOCITY = 1000;
     // The setpoint angle for arm to intake from ground
-    public static final Angle ARM_STARTING_ANGLE = Degrees.of(140); // upper
-    public static final Angle ARM_INTAKING_ANGLE = Degrees.of(10); // lower
+    public static final Angle ARM_STARTING_ANGLE = Degrees.of(127); // upper
+    public static final Angle ARM_INTAKING_ANGLE = Degrees.of(3); // lower
 
     public record ArmHardwareConstants(
             Distance ARM_COM_LENGTH,
@@ -41,9 +41,9 @@ public final class ArmConstants {
             DCMotor.getKrakenX60(1),
             48 * 32 / 18,
             // Following data need to be measured on real Robot
-            Degrees.of(150), // upper
+            Degrees.of(130), // upper
             Degrees.of(0), // lower
-            Rotation.of(0.215),
+            Rotation.of(0.20),
             Rotation.of(0),
             22,
             true,
