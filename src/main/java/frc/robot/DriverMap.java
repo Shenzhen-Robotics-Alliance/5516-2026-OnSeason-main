@@ -26,6 +26,12 @@ public interface DriverMap extends Subsystem {
 
     // Trigger lockToZeroAngle();
 
+    /** Press once to enable SOTF auto-aim mode. */
+    Trigger enableSotfAutoAimButton();
+
+    /** Press once to enable pure manual aiming mode. */
+    Trigger enableManualAimButton();
+
     /**
      * Start intake button --> Enough fuels --> Align to Hub && Start shooter motor --> Start feeder motors and intake
      * motors to shoot
@@ -108,6 +114,16 @@ public interface DriverMap extends Subsystem {
         @Override
         public Trigger lockChassisWithXFormatButton() {
             return xboxController.x();
+        }
+
+        @Override
+        public Trigger enableSotfAutoAimButton() {
+            return xboxController.a();
+        }
+
+        @Override
+        public Trigger enableManualAimButton() {
+            return xboxController.b();
         }
         // @Override
         // public Trigger lockToZeroAngle() {
@@ -231,6 +247,16 @@ public interface DriverMap extends Subsystem {
         @Override
         public Trigger lockChassisWithXFormatButton() {
             return ps5Controller.square();
+        }
+
+        @Override
+        public Trigger enableSotfAutoAimButton() {
+            return ps5Controller.cross();
+        }
+
+        @Override
+        public Trigger enableManualAimButton() {
+            return ps5Controller.circle();
         }
 
         @Override

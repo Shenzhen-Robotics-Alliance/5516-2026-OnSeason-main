@@ -1,4 +1,4 @@
-# Shooting on the Fly: 3 Implementation Plans
+# Shooting on the Fly
 
 This document outlines three implementation paths for "shooting on the fly" (SOTF). All plans assume **no turret** and a **fast swerve drivetrain**, so the robot must actively control **heading** while moving. Each plan increases in complexity and performance.
 
@@ -54,7 +54,7 @@ This document outlines three implementation paths for "shooting on the fly" (SOT
 - Confirm odometry drift stays within your shot tolerance.
 - Log chassis speed vs. commanded speed at multiple drive speeds.
 
-**Velocity compensation (Plan B/C)**
+**Velocity compensation**
 - Test straight-line shots at multiple speeds (forward/backward).
 - Test strafing shots (left/right) for tangential lead correctness.
 - Tune heading controller gains for fast but stable alignment.

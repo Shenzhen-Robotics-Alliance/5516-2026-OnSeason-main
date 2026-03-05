@@ -20,6 +20,9 @@ import static frc.robot.subsystems.vision.VisionConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -51,6 +54,11 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * Instead, the structure of the robot (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+    private enum SotfAimMode {
+        SOTF_AUTO,
+        MANUAL
+    }
+
     // Subsystems
     private final Vision vision;
     private final Drive drive;
@@ -66,6 +74,7 @@ public class RobotContainer {
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
+    private SotfAimMode currentSotfAimMode = SotfAimMode.SOTF_AUTO;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -167,11 +176,27 @@ public class RobotContainer {
                 "Disable Motor Brake",
                 Commands.runOnce(() -> setMotorBrake(false)).ignoringDisable(true));
 
-        drive.setDefaultCommand(DriveCommands.joystickDrive(
+        // Keep one single driving workflow for the driver in both modes.
+        // Auto-aim only adds heading assistance and does not replace the base control scheme.
+        drive.setDefaultCommand(DriveCommands.joystickDriveWithOptionalAutoAim(
                 drive,
                 () -> controller.translationalAxisY().getAsDouble(),
                 () -> controller.translationalAxisX().getAsDouble(),
-                () -> -controller.rotationalAxisX().getAsDouble()));
+                () -> -controller.rotationalAxisX().getAsDouble(),
+                this::shouldRunSotfAutoAim,
+                () -> {
+                    Translation2d targetPosition =
+                            vision.getVisibleHubPosition(isRedAlliance()).orElseGet(this::getAllianceFallbackTarget);
+                    Translation2d robotPosition = drive.getPose().getTranslation();
+                    Translation2d delta = targetPosition.minus(robotPosition);
+                    return new Rotation2d(Math.atan2(delta.getY(), delta.getX()));
+                }));
+
+        // Operator mode selection:
+        // A => enable SOTF auto-aim mode
+        // B => force pure manual aiming mode
+        controller.enableSotfAutoAimButton().onTrue(Commands.runOnce(() -> currentSotfAimMode = SotfAimMode.SOTF_AUTO));
+        controller.enableManualAimButton().onTrue(Commands.runOnce(() -> currentSotfAimMode = SotfAimMode.MANUAL));
 
         // Lock to 0° when A button is held
         // controller
@@ -271,6 +296,32 @@ public class RobotContainer {
     }
 
     private boolean motorBrakeEnabled = false;
+
+    private boolean isRedAlliance() {
+        return DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+    }
+
+    private Translation2d getAllianceFallbackTarget() {
+        if (isRedAlliance()) {
+            return new Translation2d(
+                    16.54 - DriveCommands.BLUE_TARGET_POSITION.getX(), DriveCommands.BLUE_TARGET_POSITION.getY());
+        }
+        return DriveCommands.BLUE_TARGET_POSITION;
+    }
+
+    private boolean shouldRunSotfAutoAim() {
+        boolean autoModeEnabled = currentSotfAimMode == SotfAimMode.SOTF_AUTO;
+        boolean hasWhitelistedTag = vision.hasSotfTarget();
+        boolean autoAimActive = autoModeEnabled && hasWhitelistedTag;
+
+        Logger.recordOutput("SOTF/Mode", currentSotfAimMode.toString());
+        Logger.recordOutput("SOTF/AutoModeEnabled", autoModeEnabled);
+        Logger.recordOutput("SOTF/HasWhitelistedTag", hasWhitelistedTag);
+        Logger.recordOutput("SOTF/AutoAimActive", autoAimActive);
+
+        return autoAimActive;
+    }
 
     public void setMotorBrake(boolean brakeModeEnable) {
         if (this.motorBrakeEnabled == brakeModeEnable) return;
