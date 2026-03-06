@@ -55,6 +55,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * Instead, the structure of the robot (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
+    private static final double AUTO_SHOOT_TIMEOUT_SECS = 2.0;
+    
     /** Climb alignment tags that can trigger vision calibration mode. */
     private static final int[] CLIMB_ALIGNMENT_TAG_WHITELIST = new int[] {15, 16, 31, 32};
 
@@ -73,8 +76,8 @@ public class RobotContainer {
     public Climb climb;
 
     // Controller
-    //     private final CommandXboxController controller = new CommandXboxController(0);
-    public final DriverMap controller = new DriverMap.LeftHandedPS5(0);
+    // private final CommandXboxController controller = new CommandXboxController(0);
+    public final DriverMap controller = new DriverMap.LeftHandedXbox(0);
     /** Copilot controller, only used for entering climb vision calibration with X button. */
     public final CommandXboxController copilotController = new CommandXboxController(1);
 
@@ -234,11 +237,11 @@ public class RobotContainer {
                 .startShooterMotorButton()
                 .onTrue(arm.toggleArmPositionCommand());
 
-        // Fire control is always on the driver's right trigger, independent of SOTF auto-aim mode.
-        Trigger shootTrigger = controller.startFeederToShootButton();
-        shootTrigger
-                // Hold right trigger: shooter + feeder run together immediately for firing.
-                .whileTrue(shooter.runShooterAndFeeder(shooterVelocitySupplier, FEEDER_SHOOT_RPM))
+        controller
+                .startFeederToShootButton()
+                // Hold right trigger: spin up shooter first, then start feeder after shooter reaches target speed.
+                .whileTrue(shooter.runShooterThenFeeder(
+                        shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM))
                 // Release right trigger: stop both shooter and feeder immediately.
                 .onFalse(shooter.stopAllShooterMotors());
 
