@@ -151,13 +151,21 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         PhoenixOdometryThread.getInstance().start();
 
         // Configure AutoBuilder for PathPlanner
+        RobotConfig pathPlannerConfig = PP_CONFIG;
+        try {
+            pathPlannerConfig = RobotConfig.fromGUISettings();
+            System.out.println("[PathPlanner] GUI settings detected in deploy directory, using them.");
+        } catch (Exception e) {
+            DriverStation.reportError(
+                    "[PathPlanner] Failed to load GUI settings, using defaults: " + e.getMessage(), false);
+        }
         AutoBuilder.configure(
                 this::getPose,
                 this::resetOdometry,
                 this::getChassisSpeeds,
                 this::runVelocity,
                 new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-                PP_CONFIG,
+                pathPlannerConfig,
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this);
         Pathfinding.setPathfinder(new LocalADStarAK());
