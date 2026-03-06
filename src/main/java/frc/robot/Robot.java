@@ -108,7 +108,6 @@ public class Robot extends LoggedRobot {
         if (autonomousCommand != null) {
             autonomousCommand.cancel();
         }
-        robotContainer.stopIntakeCommands();
     }
 
     @Override

@@ -14,12 +14,10 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
-import static frc.robot.subsystems.arm.ArmConstants.*;
 import static frc.robot.subsystems.shooter.ShooterContants.*;
 import static frc.robot.subsystems.vision.VisionConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -57,7 +55,16 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * Instead, the structure of the robot (including subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
     private static final double AUTO_SHOOT_TIMEOUT_SECS = 2.0;
+    
+    /** Climb alignment tags that can trigger vision calibration mode. */
+    private static final int[] CLIMB_ALIGNMENT_TAG_WHITELIST = new int[] {15, 16, 31, 32};
+
+    private enum SotfAimMode {
+        SOTF_AUTO,
+        MANUAL
+    }
 
     // Subsystems
     private final Vision vision;
@@ -79,10 +86,6 @@ public class RobotContainer {
     private SotfAimMode currentSotfAimMode = SotfAimMode.SOTF_AUTO;
     /** Latches true after copilot presses X to arm climb vision calibration mode. */
     private boolean climbVisionCalibrationArmed = false;
-
-    // Cached commands for PathPlanner named events
-    private Command intakeHoldCommand;
-    private Command intakeOnlyCommand;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -149,8 +152,6 @@ public class RobotContainer {
 
         shooter = new Shooter(new ShooterIOReal());
         arm = new Arm(new ArmIOReal());
-
-        registerPathPlannerNamedCommands();
 
         // Set up auto routines
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -278,42 +279,13 @@ public class RobotContainer {
                 .whileTrue(climb.manualDownCommand());
     }
 
-    private void registerPathPlannerNamedCommands() {
-        intakeHoldCommand = arm.holdIntakePositionAndRunIntake();
-        intakeOnlyCommand = arm.intakeCommand();
-
-        NamedCommands.registerCommand("deploy", Commands.runOnce(() -> arm.requestPosition(ARM_INTAKING_ANGLE), arm));
-        NamedCommands.registerCommand("start intake", Commands.runOnce(() -> intakeOnlyCommand.schedule()));
-        NamedCommands.registerCommand(
-                "deploy and start intake", Commands.runOnce(() -> intakeHoldCommand.schedule()));
-        NamedCommands.registerCommand("Stop intake", Commands.runOnce(this::stopIntakeCommands));
-
-        DoubleSupplier shooterVelocitySupplier = () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -2800.0);
-        NamedCommands.registerCommand(
-                "shoot",
-                shooter.runShooterThenFeeder(
-                                shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM)
-                        .withTimeout(AUTO_SHOOT_TIMEOUT_SECS)
-                        .andThen(Commands.runOnce(() -> shooter.stopAllShooterMotors().schedule())));
-    }
-
     /**
      * Use this to pass the autonomous command to the main {@link Robot} class.
      *
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autoChooser.get().andThen(Commands.runOnce(this::stopIntakeCommands));
-    }
-
-    public void stopIntakeCommands() {
-        if (intakeHoldCommand != null) {
-            intakeHoldCommand.cancel();
-        }
-        if (intakeOnlyCommand != null) {
-            intakeOnlyCommand.cancel();
-        }
-        arm.intakeIdleCommand().withTimeout(0.1).schedule();
+        return autoChooser.get();
     }
 
     public void resetSimulation() {
