@@ -229,6 +229,14 @@ public class Shooter extends SubsystemBase {
         return run(() -> setShooterWithSubshooter(baseRPMSupplier.getAsDouble()));
     }
 
+    /** Runs shooter/subshooter and feeder together from one command execute loop. */
+    public Command runShooterAndFeeder(DoubleSupplier shooterRpmSupplier, double feederRpm) {
+        return run(() -> {
+            setShooterWithSubshooter(shooterRpmSupplier.getAsDouble());
+            setFeederVelocity(feederRpm);
+        });
+    }
+
     /**
      * Hold-to-shoot command: keep shooter spinning, and only enable feeder after shooter reaches speed.
      *

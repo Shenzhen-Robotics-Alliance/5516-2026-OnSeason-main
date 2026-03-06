@@ -234,11 +234,11 @@ public class RobotContainer {
                 .startShooterMotorButton()
                 .onTrue(arm.toggleArmPositionCommand());
 
-        controller
-                .startFeederToShootButton()
-                // Hold right trigger: spin up shooter first, then start feeder after shooter reaches target speed.
-                .whileTrue(shooter.runShooterThenFeeder(
-                        shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM))
+        // Fire control is always on the driver's right trigger, independent of SOTF auto-aim mode.
+        Trigger shootTrigger = controller.startFeederToShootButton();
+        shootTrigger
+                // Hold right trigger: shooter + feeder run together immediately for firing.
+                .whileTrue(shooter.runShooterAndFeeder(shooterVelocitySupplier, FEEDER_SHOOT_RPM))
                 // Release right trigger: stop both shooter and feeder immediately.
                 .onFalse(shooter.stopAllShooterMotors());
 
