@@ -80,7 +80,7 @@ public final class ShooterContants {
     public static final double MAX_FEEDER_RPM = 3000.0;
     public static final double FEEDER_SHOOT_RPM = -2000.0;
     public static final double FEEDER_OUTTAKE_RPM = 2000.0;
-    public static final double SHOOTER_READY_TOLERANCE_RPM = 150.0;
+    public static final double SHOOTER_READY_TOLERANCE_RPM = 200.0;
 
     // Voltage settings for backward compatibility
     public record VoltageSettings(double[] shooterMotorVolts, double[] feederMotorVolts) {

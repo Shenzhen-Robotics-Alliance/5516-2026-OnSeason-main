@@ -59,7 +59,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
 
     private static final double AUTO_SHOOT_TIMEOUT_SECS = 2.0;
-    
+
     /** Climb alignment tags that can trigger vision calibration mode. */
     private static final int[] CLIMB_ALIGNMENT_TAG_WHITELIST = new int[] {15, 16, 31, 32};
 
@@ -88,6 +88,7 @@ public class RobotContainer {
     private SotfAimMode currentSotfAimMode = SotfAimMode.SOTF_AUTO;
     /** Latches true after copilot presses X to arm climb vision calibration mode. */
     private boolean climbVisionCalibrationArmed = false;
+
     private Command intakeHoldCommand;
     private Command intakeOnlyCommand;
 
@@ -291,17 +292,16 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("deploy", Commands.runOnce(() -> arm.requestPosition(ARM_INTAKING_ANGLE), arm));
         NamedCommands.registerCommand("start intake", Commands.runOnce(() -> intakeOnlyCommand.schedule()));
-        NamedCommands.registerCommand(
-                "deploy and start intake", Commands.runOnce(() -> intakeHoldCommand.schedule()));
+        NamedCommands.registerCommand("deploy and start intake", Commands.runOnce(() -> intakeHoldCommand.schedule()));
         NamedCommands.registerCommand("Stop intake", Commands.runOnce(this::stopIntakeCommands));
 
         DoubleSupplier shooterVelocitySupplier = () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -2800.0);
         NamedCommands.registerCommand(
                 "shoot",
-                shooter.runShooterThenFeeder(
-                                shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM)
+                shooter.runShooterThenFeeder(shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM)
                         .withTimeout(AUTO_SHOOT_TIMEOUT_SECS)
-                        .andThen(Commands.runOnce(() -> shooter.stopAllShooterMotors().schedule())));
+                        .andThen(Commands.runOnce(
+                                () -> shooter.stopAllShooterMotors().schedule())));
     }
 
     /**
