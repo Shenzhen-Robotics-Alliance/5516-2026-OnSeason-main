@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -34,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.drive.AutoClimbCommands;
 import frc.robot.commands.drive.HubAlignmentCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.arm.Arm;
@@ -85,6 +87,7 @@ public class RobotContainer {
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
+    private final SendableChooser<Command> autoChooserForDriverStation;
     private SotfAimMode currentSotfAimMode = SotfAimMode.SOTF_AUTO;
     /** Latches true after copilot presses X to arm climb vision calibration mode. */
     private boolean climbVisionCalibrationArmed = false;
@@ -160,8 +163,17 @@ public class RobotContainer {
 
         registerPathPlannerNamedCommands();
 
-        // Set up auto routines
+        // Set up auto routines - for Elastic dashboard
         autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+
+        // Set up auto routines - for DriverStation (uses different NetworkTables key)
+        autoChooserForDriverStation = new SendableChooser<>();
+        autoChooserForDriverStation.setDefaultOption("Do Nothing", Commands.none());
+        // Add all autos from PathPlanner
+        for (String autoName : AutoBuilder.getAllAutoNames()) {
+            autoChooserForDriverStation.addOption(autoName, AutoBuilder.buildAuto(autoName));
+        }
+        SmartDashboard.putData("Auto Selector", autoChooserForDriverStation);
 
         // Set up SysId routines
         autoChooser.addOption("Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
@@ -284,6 +296,10 @@ public class RobotContainer {
                 // Hold POV down: climb moves downward, release to stop.
                 .povDown()
                 .whileTrue(climb.manualDownCommand());
+
+        // Auto-climb navigation: POV Left triggers pathfinding to climb prep position
+        // This provides one-button navigation to the climb structure while avoiding obstacles
+        controller.povLeft().whileTrue(AutoClimbCommands.pathfindToClimbPrep(drive));
     }
 
     private void registerPathPlannerNamedCommands() {
@@ -310,7 +326,11 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autoChooser.get().andThen(Commands.runOnce(this::stopIntakeCommands));
+        Command selectedAuto = autoChooserForDriverStation.getSelected();
+        if (selectedAuto != null) {
+            return selectedAuto.andThen(Commands.runOnce(this::stopIntakeCommands));
+        }
+        return Commands.none().andThen(Commands.runOnce(this::stopIntakeCommands));
     }
 
     public void stopIntakeCommands() {
