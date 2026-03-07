@@ -36,7 +36,7 @@ public class HubAlignmentCommands {
     // PID constants for angle control
     private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.2;
-    private static final double ANGLE_MAX_VELOCITY = 20.0;
+    private static final double ANGLE_MAX_VELOCITY = 12.0;
     private static final double ANGLE_MAX_ACCELERATION = 30.0;
 
     // Feedforward gain for velocity prediction (0.7 = 70% feedforward)

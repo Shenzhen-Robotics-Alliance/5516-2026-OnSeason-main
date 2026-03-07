@@ -9,8 +9,10 @@ public interface ClimbIO {
         boolean hardwareConnected = false;
         /** Supply current of climb motor in amps. */
         double climbCurrentAmps = 0.0;
-        /** Position feedback of climb motor (in rotations). */
+        /** Position feedback from absolute encoder (in rotations). */
         double climbAbsolutePosition = 0.0;
+        /** Whether the absolute encoder is connected. */
+        boolean absoluteEncoderConnected = false;
     }
 
     void updateInputs(ClimbInputs inputs);
