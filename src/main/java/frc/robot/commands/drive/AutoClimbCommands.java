@@ -106,7 +106,7 @@ public class AutoClimbCommands {
         boolean isRed = DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red;
 
-        Rotation2d rotation = isRed ? Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(0);
+        Rotation2d rotation = isRed ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0);
 
         return new Pose2d(position, rotation);
     }
