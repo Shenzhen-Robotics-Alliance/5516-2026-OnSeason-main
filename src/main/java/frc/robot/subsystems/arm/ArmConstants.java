@@ -8,7 +8,7 @@ import frc.robot.subsystems.arm.ArmConstants.ArmPIDConstants;
 
 public final class ArmConstants {
     public static final Current ARM_CURRENT_LIMIT = Amps.of(20.0);
-    public static final Voltage ARM_MAX_VOLTAGE = Volts.of(4.0);
+    public static final Voltage ARM_MAX_VOLTAGE = Volts.of(6.0);
 
     public static final Current INTAKE_CURRENT_LIMIT = Amps.of(30);
     public static final Voltage INTAKE_MAX_VOLTAGE = Volts.of(23.0);
@@ -64,8 +64,8 @@ public final class ArmConstants {
 
     public static final ArmPIDConstants PID_CONSTANTS = new ArmPIDConstants(
             0.05,
-            0.28, // 0.11
-            1.61,
+            0.29, // 0.11
+            1.63,
             0.015, // 0.01
             2.1 / Math.toRadians(30), // 6 / Math.toRadians(30)
             RotationsPerSecond.of(1),

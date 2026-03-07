@@ -32,7 +32,7 @@ import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
-    private static final int[] SOTF_APRILTAG_WHITELIST = new int[] {7, 8, 9, 10, 28, 27, 26, 25, 24, 23};
+    private static final int[] SOTF_APRILTAG_WHITELIST = new int[] {2, 5, 8, 11, 9, 10, 18, 27, 26, 25, 24, 21};
 
     private final VisionConsumer consumer;
     private final VisionIO[] io;
