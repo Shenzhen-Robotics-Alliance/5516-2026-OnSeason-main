@@ -32,9 +32,11 @@ public interface DriverMap extends Subsystem {
      */
     Trigger autoAlignToHubButton();
 
+    Trigger manualAimToHubButton();
+
     Trigger intakeButton();
 
-    Trigger startShooterMotorButton();
+    Trigger armToIntake();
 
     Trigger startFeederToShootButton();
 
@@ -115,7 +117,7 @@ public interface DriverMap extends Subsystem {
         // }
         @Override
         public Trigger autoAlignToHubButton() {
-            return xboxController.rightBumper();
+            return xboxController.a();
         }
 
         @Override
@@ -124,8 +126,13 @@ public interface DriverMap extends Subsystem {
         }
 
         @Override
-        public Trigger startShooterMotorButton() {
+        public Trigger armToIntake() {
             return xboxController.leftBumper();
+        }
+
+        @Override
+        public Trigger manualAimToHubButton() {
+            return xboxController.b();
         }
 
         @Override
@@ -235,8 +242,14 @@ public interface DriverMap extends Subsystem {
 
         @Override
         public Trigger autoAlignToHubButton() {
-            return ps5Controller.R1();
+            return ps5Controller.cross();
         }
+
+        @Override
+        public Trigger manualAimToHubButton() {
+            return ps5Controller.circle();
+        }
+
 
         @Override
         public Trigger intakeButton() {
@@ -244,7 +257,7 @@ public interface DriverMap extends Subsystem {
         }
 
         @Override
-        public Trigger startShooterMotorButton() {
+        public Trigger armToIntake() {
             return ps5Controller.L1();
         }
 

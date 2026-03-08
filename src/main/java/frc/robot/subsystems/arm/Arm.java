@@ -180,7 +180,7 @@ public class Arm extends SubsystemBase {
     /**
      * Whether the arm's profile state is close enough to its setpoint.
      *
-     * <p>Note that this does not reflect whether the mechanism is actually at its setpoint.
+     * <p>Note that this does not reflect whether the mechanism is actually at its setpoint. p
      *
      * @return <code>true</code> if there is a setpoint and the profile is close enough to the goal, <code>false</code>
      *     otherwise.
