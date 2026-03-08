@@ -197,8 +197,8 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
                 drive,
-                () -> controller.translationalAxisY().getAsDouble(),
-                () -> controller.translationalAxisX().getAsDouble(),
+                () -> -controller.translationalAxisY().getAsDouble(),
+                () -> -controller.translationalAxisX().getAsDouble(),
                 () -> -controller.rotationalAxisX().getAsDouble()));
 
         // Lock to 0° when A button is held
@@ -227,9 +227,10 @@ public class RobotContainer {
         controller.resetOdometryButton().onTrue(Commands.runOnce(resetOdometry).ignoringDisable(true));
         SmartDashboard.putNumber("Shooter Velocity (RPM)", -2800.0);
         DoubleSupplier shooterVelocitySupplier = () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -2800.0);
+
         controller
                 // Press left bumper once to toggle arm between start and intake positions.
-                .startShooterMotorButton()
+                .armToIntake()
                 .onTrue(arm.toggleArmPositionCommand());
 
         controller
