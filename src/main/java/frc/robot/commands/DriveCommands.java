@@ -33,7 +33,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -304,70 +303,5 @@ public class DriveCommands {
                 () -> xSupplier.getAsDouble() * 0.3, // Reduce sensitivity to 0.3x
                 () -> ySupplier.getAsDouble() * 0.3, // Reduce sensitivity to 0.3x
                 BLUE_TARGET_POSITION);
-    }
-
-    /**
-     * Field-relative drive with identical manual joystick behavior in all cases.
-     *
-     * <p>When auto-aim is enabled, angle-hold PID output is added on top of manual rotational input. This keeps the
-     * driver's operation logic unchanged while allowing moving auto-aim assistance.
-     */
-    public static Command joystickDriveWithOptionalAutoAim(
-            Drive drive,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            DoubleSupplier omegaSupplier,
-            BooleanSupplier autoAimEnabledSupplier,
-            Supplier<Rotation2d> rotationSupplier) {
-
-        ProfiledPIDController angleController = new ProfiledPIDController(
-                ANGLE_KP, 0.0, ANGLE_KD, new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-        angleController.enableContinuousInput(-Math.PI, Math.PI);
-        final boolean[] lastAutoAimEnabled = new boolean[] {false};
-
-        return Commands.run(
-                        () -> {
-                            Translation2d linearVelocity =
-                                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-                            // Preserve existing manual rotation shaping.
-                            double manualOmega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
-                            manualOmega = Math.copySign(manualOmega * manualOmega, manualOmega)
-                                    * drive.getMaxAngularSpeedRadPerSec();
-
-                            boolean autoAimEnabled = autoAimEnabledSupplier.getAsBoolean();
-                            if (autoAimEnabled && !lastAutoAimEnabled[0]) {
-                                angleController.reset(drive.getRotation().getRadians());
-                            }
-
-                            double omega = manualOmega;
-                            if (autoAimEnabled) {
-                                double autoAimOmega = angleController.calculate(
-                                        drive.getRotation().getRadians(),
-                                        rotationSupplier.get().getRadians());
-                                omega = MathUtil.clamp(
-                                        manualOmega + autoAimOmega,
-                                        -drive.getMaxAngularSpeedRadPerSec(),
-                                        drive.getMaxAngularSpeedRadPerSec());
-                            }
-                            lastAutoAimEnabled[0] = autoAimEnabled;
-
-                            ChassisSpeeds speeds = new ChassisSpeeds(
-                                    linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    omega);
-                            boolean isFlipped = DriverStation.getAlliance().isPresent()
-                                    && DriverStation.getAlliance().get() == Alliance.Red;
-                            drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    speeds,
-                                    isFlipped
-                                            ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                                            : drive.getRotation()));
-                        },
-                        drive)
-                .beforeStarting(() -> {
-                    angleController.reset(drive.getRotation().getRadians());
-                    lastAutoAimEnabled[0] = false;
-                });
     }
 }

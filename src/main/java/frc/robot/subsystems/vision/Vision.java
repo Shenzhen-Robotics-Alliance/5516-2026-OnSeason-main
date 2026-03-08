@@ -32,8 +32,6 @@ import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
-    private static final int[] SOTF_APRILTAG_WHITELIST = new int[] {2, 5, 8, 11, 9, 10, 18, 27, 26, 25, 24, 21};
-
     private final VisionConsumer consumer;
     private final VisionIO[] io;
     private final VisionIOInputsAutoLogged[] inputs;
@@ -73,20 +71,6 @@ public class Vision extends SubsystemBase {
      */
     public int[] getVisibleTagIds() {
         return inputs[0].tagIds;
-    }
-
-    /** Returns true if any camera currently sees one of the SOTF-enabled AprilTags. */
-    public boolean hasSotfTarget() {
-        for (var input : inputs) {
-            for (int visibleTagId : input.tagIds) {
-                for (int whitelistTagId : SOTF_APRILTAG_WHITELIST) {
-                    if (visibleTagId == whitelistTagId) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -288,8 +272,6 @@ public class Vision extends SubsystemBase {
         Logger.recordOutput(
                 "Vision/Summary/RobotPosesRejected",
                 allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
-        Logger.recordOutput("Vision/SOTF/HasWhitelistedTag", hasSotfTarget());
-        Logger.recordOutput("Vision/SOTF/WhitelistedTagIds", SOTF_APRILTAG_WHITELIST);
     }
 
     @FunctionalInterface

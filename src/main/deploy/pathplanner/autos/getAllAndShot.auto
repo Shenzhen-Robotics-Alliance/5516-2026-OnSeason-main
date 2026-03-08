@@ -17,15 +17,41 @@
           }
         },
         {
-          "type": "wait",
+          "type": "deadline",
           "data": {
-            "waitTime": 0.5
+            "commands": [
+              {
+                "type": "wait",
+                "data": {
+                  "waitTime": 0.5
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "deploy"
+                }
+              }
+            ]
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "goToIntake"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "goToIntake"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "start intake"
+                }
+              }
+            ]
           }
         },
         {
