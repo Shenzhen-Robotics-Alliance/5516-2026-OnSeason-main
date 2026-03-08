@@ -1,5 +1,7 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -7,12 +9,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.AlertsManager;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
     // Hardware interface
     private final ShooterIO io;
     private final ShooterIOInputsAutoLogged inputs;
+
+    private double autoShooterRPM = 0;
+    private double distToHub = 0;
 
     // Dynamic alerts based on motor count
     private Alert[] shooterMotorAlerts;
@@ -93,6 +99,8 @@ public class Shooter extends SubsystemBase {
         Logger.recordOutput("Shooter/TotalCurrentAmps", inputs.shooterMotorsTotalCurrentAmps);
         Logger.recordOutput("Feeder/AverageVolts", inputs.feederMotorsAverageVolts);
         Logger.recordOutput("Feeder/TotalCurrentAmps", inputs.feederMotorsTotalCurrentAmps);
+        Logger.recordOutput("Shooter/AutoTargetRPM", autoShooterRPM);
+        Logger.recordOutput("Shooter/DistanceToHub", distToHub);
 
         // Log velocity data if available
         if (inputs.shooterMotorsVelocityRPM != null && inputs.shooterMotorsVelocityRPM.length > 0) {
@@ -177,6 +185,16 @@ public class Shooter extends SubsystemBase {
     private void executeIdle() {
         setShooterMotorVolts(0.0);
         setFeederMotorVolts(0.0);
+    }
+
+    public void updateAutoSetpoint(Pose2d robotPose) {
+        var result = ShooterInterpolation.calculate(robotPose);
+        autoShooterRPM = result.shooterRPM();
+        distToHub = result.distance();
+    }
+
+    public double getAutoShooterRPM() {
+        return autoShooterRPM;
     }
 
     public Command runShooter(double shooterMotorVolts) {
@@ -264,6 +282,33 @@ public class Shooter extends SubsystemBase {
         return run(() -> {
             setShooterWithSubshooter(0.0);
             setFeederVelocity(0.0);
+        });
+    }
+
+    public Command runAutoShooterWithFeeder(double feederRpm) {
+        return run(() -> {
+            io.setShooterWithSubshooter(autoShooterRPM);
+
+            if (isShooterAtSpeed(autoShooterRPM, ShooterContants.SHOOTER_READY_TOLERANCE_RPM)) {
+                setFeederVelocity(feederRpm);
+            } else {
+                setFeederVelocity(0.0);
+            }
+        });
+    }
+
+    public Command runAutoRPMCommand(Supplier<Pose2d> robotPoseSupplier, Translation2d targetLocation) {
+        return run(() -> {
+            Pose2d currentPose = robotPoseSupplier.get();
+
+            double distance = currentPose.getTranslation().getDistance(targetLocation);
+
+            double targetRpm = ShooterInterpolation.getRpm(distance);
+
+            setShooterWithSubshooter(targetRpm);
+
+            Logger.recordOutput("Shooter/AutoDistance", distance);
+            Logger.recordOutput("Shooter/AutoTargetRPM", targetRpm);
         });
     }
 
