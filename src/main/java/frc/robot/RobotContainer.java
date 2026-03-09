@@ -99,7 +99,8 @@ public class RobotContainer {
                 vision = new Vision(
                         drive,
                         new VisionIOPhotonVision(VisionConstants.camera0Name, VisionConstants.robotToCamera0),
-                        new VisionIOPhotonVision(VisionConstants.camera1Name, VisionConstants.robotToCamera1));
+                        new VisionIOPhotonVision(VisionConstants.camera1Name, VisionConstants.robotToCamera1),
+                        new VisionIOPhotonVision(VisionConstants.camera2Name, VisionConstants.robotToCamera2));
                 arm = new Arm(new ArmIOReal());
                 climb = new Climb(new ClimbIOReal());
                 break;
@@ -122,7 +123,9 @@ public class RobotContainer {
                         new VisionIOPhotonVisionSim(
                                 camera0Name, robotToCamera0, driveSimulation::getSimulatedDriveTrainPose),
                         new VisionIOPhotonVisionSim(
-                                camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose));
+                                camera1Name, robotToCamera1, driveSimulation::getSimulatedDriveTrainPose),
+                        new VisionIOPhotonVisionSim(
+                                camera2Name, robotToCamera2, driveSimulation::getSimulatedDriveTrainPose));
                 climb = new Climb(new ClimbIO() {
                     @Override
                     public void updateInputs(ClimbInputs inputs) {}
@@ -254,10 +257,10 @@ public class RobotContainer {
         controller
                 .autoAlignToHubButton()
                 .whileTrue(HubAlignmentCommands.aimAtHub(
-                                drive,
-                                () -> controller.translationalAxisY().getAsDouble(),
-                                () -> controller.translationalAxisX().getAsDouble())
-                        .alongWith(shooter.runAutoRPMCommand(() -> drive.getPose(), hubLocation)));
+                        drive,
+                        () -> controller.translationalAxisY().getAsDouble(),
+                        () -> controller.translationalAxisX().getAsDouble()));
+        // .alongWith(shooter.runAutoRPMCommand(() -> drive.getPose(), hubLocation)));
 
         controller
                 // Hold left trigger: run intake only. Release to stop intake.

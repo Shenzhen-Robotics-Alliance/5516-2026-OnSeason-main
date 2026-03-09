@@ -40,19 +40,19 @@ public class AutoClimbCommands {
 
     // Blue alliance climb prep position (approximately 1m from climb structure)
     // Position is on the left side of the blue alliance when facing the climb structure
-    public static final Translation2d BLUE_CLIMB_PREP_POSITION = new Translation2d(1.7, 3.7);
+    public static final Translation2d BLUE_CLIMB_PREP_POSITION = new Translation2d(1.5, 4.0);
 
     // Tolerance for reaching the target position (in meters)
-    private static final double POSITION_TOLERANCE_METERS = 0.1;
+    private static final double POSITION_TOLERANCE_METERS = 0.01;
 
     // Maximum standard deviation for pose estimation to be considered reliable
     // If the pose estimation uncertainty is higher than this, we should not use pathfinding
-    private static final double MAX_POSE_STD_DEV_METERS = 0.5;
+    private static final double MAX_POSE_STD_DEV_METERS = 0.7;
 
     // PathConstraints for stable movement with arm extended
     // Lower speed and acceleration for safety during climb approach
     private static final PathConstraints CLIMB_NAVIGATION_CONSTRAINTS = new PathConstraints(
-            2.0, // Max velocity: 2 m/s (slower for safety)
+            5.0, // Max velocity: 2 m/s (slower for safety)
             3.0, // Max acceleration: 3 m/s² (moderate acceleration)
             Units.degreesToRadians(360), // Max angular velocity: 360 deg/s
             Units.degreesToRadians(540)); // Max angular acceleration: 540 deg/s²

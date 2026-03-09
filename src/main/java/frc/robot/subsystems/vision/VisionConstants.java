@@ -28,6 +28,7 @@ public class VisionConstants {
     // Camera names, must match names configured on coprocessor
     public static String camera0Name = "frontLeftCam";
     public static String camera1Name = "frontRightCam";
+    public static String camera2Name = "centerBackCam";
 
     // Robot to camera transforms
     // (Not used by Limelight, configure in web UI instead)
@@ -41,7 +42,11 @@ public class VisionConstants {
             Inches.of(10.35).times(-1), // Rightwards 24.25/2 inch
             Inches.of(26).plus(Inches.of(0)), // Height 2 inch + Chassis Height 4 inch
             new Rotation3d(Degrees.zero(), Degrees.of(-12), Degrees.zero())); // Pitch upwards 24 degrees
-
+    public static Transform3d robotToCamera2 = new Transform3d(
+            Inches.of(3), // need adjustment**
+            Inches.of(0).times(-1),
+            Inches.of(24).plus(Inches.of(0)),
+            new Rotation3d(Degrees.zero(), Degrees.of(-12), Degrees.of(180)));
     // Basic filtering thresholds
     public static double maxAmbiguity = 0.3;
     public static double maxZError = 0.75;
@@ -55,7 +60,8 @@ public class VisionConstants {
     // (Adjust to trust some cameras more than others)
     public static double[] cameraStdDevFactors = new double[] {
         1.0, // Camera 0
-        1.0 // Camera 1
+        1.0, // Camera 1
+        1.0 // Camera2
     };
 
     // Multipliers to apply for MegaTag 2 observations
