@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -44,6 +43,7 @@ import frc.robot.subsystems.climb.ClimbIOReal;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIOReal;
+import frc.robot.subsystems.shooter.ShooterInterpolation;
 import frc.robot.subsystems.vision.*;
 import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.SimulatedArena;
@@ -59,6 +59,12 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
 
     private static final double AUTO_SHOOT_TIMEOUT_SECS = 2.0;
+    private static final double MANUAL_SHOT_RPM = 3500.0;
+
+    private enum ShotMode {
+        AUTO,
+        MANUAL
+    }
 
     // Subsystems
     private final Vision vision;
@@ -74,7 +80,7 @@ public class RobotContainer {
     // Controller
     // private final CommandXboxController controller = new CommandXboxController(0);
     public final DriverMap controller = new DriverMap.LeftHandedPS5(0);
-    public final CommandXboxController copilotController = new CommandXboxController(1);
+    public final DriverMap copilotController = new DriverMap.LeftHandedXbox(1);
 
     // Dashboard inputs
     private final LoggedDashboardChooser<Command> autoChooser;
@@ -82,6 +88,8 @@ public class RobotContainer {
 
     private Command intakeHoldCommand;
     private Command intakeOnlyCommand;
+
+    private ShotMode currentShotMode = ShotMode.MANUAL;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -228,8 +236,25 @@ public class RobotContainer {
                 : () -> drive.resetOdometry(new Pose2d(drive.getPose().getTranslation(), new Rotation2d()));
         // controller.start().onTrue(Commands.runOnce(resetOdometry).ignoringDisable(true));
         controller.resetOdometryButton().onTrue(Commands.runOnce(resetOdometry).ignoringDisable(true));
-        SmartDashboard.putNumber("Shooter Velocity (RPM)", -2800.0);
-        DoubleSupplier shooterVelocitySupplier = () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -2800.0);
+        DoubleSupplier shooterVelocitySupplier = () -> {
+            if (currentShotMode == ShotMode.AUTO) {
+                return ShooterInterpolation.calculate(drive.getPose()).shooterRPM();
+            }
+            return MANUAL_SHOT_RPM;
+        };
+
+        controller.autoAlignToHubButton().onTrue(Commands.runOnce(() -> {
+            currentShotMode = ShotMode.AUTO;
+            SmartDashboard.putString("Shooter/ShotMode", currentShotMode.name());
+        }));
+
+        controller.manualAimToHubButton().onTrue(Commands.runOnce(() -> {
+            currentShotMode = ShotMode.MANUAL;
+            SmartDashboard.putString("Shooter/ShotMode", currentShotMode.name());
+        }));
+
+        SmartDashboard.putString("Shooter/ShotMode", currentShotMode.name());
+        SmartDashboard.putNumber("Shooter/ManualTargetRPM", MANUAL_SHOT_RPM);
 
         controller
                 // Press left bumper once to toggle arm between start and intake positions.
@@ -241,6 +266,10 @@ public class RobotContainer {
                 // Hold right trigger: spin up shooter first, then start feeder after shooter reaches target speed.
                 .whileTrue(shooter.runShooterThenFeeder(
                         shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM))
+                .whileTrue(HubAlignmentCommands.aimAtHub(
+                        drive,
+                        () -> -controller.translationalAxisY().getAsDouble(),
+                        () -> -controller.translationalAxisX().getAsDouble()))
                 // Release right trigger: stop both shooter and feeder immediately.
                 .onFalse(shooter.stopAllShooterMotors());
 
@@ -254,12 +283,7 @@ public class RobotContainer {
                 .onFalse(shooter.runFeederVelocity(0.0).alongWith(arm.intakeIdleCommand()));
         // Auto-aiming binding - uses fixed Hub center coordinates (not AprilTag)
         // Vision is still used for robot pose estimation (odometry), but not for aiming
-        controller
-                .autoAlignToHubButton()
-                .whileTrue(HubAlignmentCommands.aimAtHub(
-                        drive,
-                        () -> controller.translationalAxisY().getAsDouble(),
-                        () -> controller.translationalAxisX().getAsDouble()));
+
         // .alongWith(shooter.runAutoRPMCommand(() -> drive.getPose(), hubLocation)));
 
         controller
