@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.0,
-        "y": 5.5
+        "x": 1.221,
+        "y": 5.96
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.123237907062693,
-        "y": 5.488277860101206
+        "x": 2.221,
+        "y": 5.96
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.0,
-        "y": 5.5
+        "x": 0.6400614035087719,
+        "y": 5.96
       },
       "prevControl": {
-        "x": 5.1279200696401555,
-        "y": 5.494415528636004
+        "x": -0.35993859649122806,
+        "y": 5.96
       },
       "nextControl": null,
       "isLocked": false,
@@ -30,18 +30,7 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "pointTowardsZones": [
-    {
-      "fieldPosition": {
-        "x": 4.0,
-        "y": 6.5
-      },
-      "rotationOffset": -45.0,
-      "minWaypointRelativePos": 0.7929328621908126,
-      "maxWaypointRelativePos": 1.0,
-      "name": "Point Towards Zone"
-    }
-  ],
+  "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.0,
@@ -52,14 +41,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 105.00000000000001
+    "velocity": 0,
+    "rotation": 0.0
   },
   "reversed": false,
-  "folder": "IntakeAllAndShot",
+  "folder": "NoAcross",
   "idealStartingState": {
-    "velocity": 3.0,
-    "rotation": 135.0
+    "velocity": 0,
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

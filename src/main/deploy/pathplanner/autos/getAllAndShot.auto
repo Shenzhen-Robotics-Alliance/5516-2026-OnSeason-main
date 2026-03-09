@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "AcrossThreshold"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "goToPreIntake"
+            "pathName": "Across"
           }
         },
         {
@@ -33,6 +27,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "goToPreIntake"
           }
         },
         {
@@ -61,15 +61,21 @@
           }
         },
         {
-          "type": "named",
+          "type": "wait",
           "data": {
-            "name": "Stop intake"
+            "waitTime": 0.5
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "BackAcross"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.8
           }
         },
         {

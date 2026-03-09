@@ -253,12 +253,11 @@ public class RobotContainer {
         controller
                 .autoAlignToHubButton()
                 .whileTrue(HubAlignmentCommands.aimAtHubWithVision(
-                                drive,
-                                vision,
-                                () -> controller.translationalAxisY().getAsDouble(),
-                                () -> controller.translationalAxisX().getAsDouble(),
-                                hubLocation)
-                        .alongWith(shooter.runAutoRPMCommand(() -> drive.getPose(), hubLocation)));
+                        drive,
+                        vision,
+                        () -> controller.translationalAxisY().getAsDouble(),
+                        () -> controller.translationalAxisX().getAsDouble(),
+                        hubLocation));
 
         controller
                 // Hold left trigger: run intake only. Release to stop intake.

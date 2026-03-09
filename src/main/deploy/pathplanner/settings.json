@@ -9,6 +9,8 @@
     "OutpostSideNeutral",
     "OutpostSideBumpAllianceHalf",
     "OutpostSideAllianceFull",
+    "NoAcross",
+    "New Folder",
     "IntakeAllAndShot",
     "DepoTrenchSide",
     "DepoSideCenterNeutral",
@@ -16,7 +18,9 @@
     "DepoBumpSide",
     "Center"
   ],
-  "autoFolders": [],
+  "autoFolders": [
+    "New Folder"
+  ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 540.0,

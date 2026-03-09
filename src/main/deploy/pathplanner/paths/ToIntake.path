@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 6.7,
-        "y": 5.5
+        "x": 7.474,
+        "y": 6.963
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.952058769184852,
-        "y": 5.490751508592319
+        "x": 7.711603861713018,
+        "y": 7.040745770940041
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.7,
-        "y": 5.5
+        "x": 7.339431180952692,
+        "y": 4.784577483991415
       },
       "prevControl": {
-        "x": 6.828000101782187,
-        "y": 5.502873098596899
+        "x": 7.263359716000332,
+        "y": 5.044114162481245
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": 180.0
+    "rotation": 90.0
   },
   "reversed": false,
   "folder": "UpAcrossIntakeShot",
