@@ -52,12 +52,12 @@ public final class ShooterContants {
             });
 
     // Subshooter configuration (independently controlled motor)
-    public static final int SUBSHOOTER_MOTOR_ID = 18;
-    public static final boolean SUBSHOOTER_MOTOR_INVERTED = false;
+    //  public static final int SUBSHOOTER_MOTOR_ID = 18;
+    //  public static final boolean SUBSHOOTER_MOTOR_INVERTED = false;
 
     // Subshooter RPM offset (relative to shooter base RPM)
     // Positive: subshooter faster than shooter, Negative: subshooter slower than shooter
-    public static final double SUBSHOOTER_RPM_OFFSET = -1.2;
+    // public static final double SUBSHOOTER_RPM_OFFSET = -1.2;
 
     // Default voltage settings matching previous configuration
     public static final VoltageSettings VOLTAGE_SETTINGS =

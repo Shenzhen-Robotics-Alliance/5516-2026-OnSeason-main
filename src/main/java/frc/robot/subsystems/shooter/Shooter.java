@@ -23,7 +23,7 @@ public class Shooter extends SubsystemBase {
     // Dynamic alerts based on motor count
     private Alert[] shooterMotorAlerts;
     private Alert[] feederMotorAlerts;
-    private Alert[] subshooterMotorAlerts;
+    // private Alert[] subshooterMotorAlerts;
 
     public Shooter(ShooterIO io) {
         this.io = io;
@@ -32,7 +32,7 @@ public class Shooter extends SubsystemBase {
         // Initialize alerts arrays (will be populated in periodic based on actual motor count)
         shooterMotorAlerts = new Alert[0];
         feederMotorAlerts = new Alert[0];
-        subshooterMotorAlerts = new Alert[0];
+        //  subshooterMotorAlerts = new Alert[0];
     }
 
     public boolean hardwareOK() {
@@ -110,18 +110,6 @@ public class Shooter extends SubsystemBase {
 
         if (inputs.feederMotorsVelocityRPM != null && inputs.feederMotorsVelocityRPM.length > 0) {
             Logger.recordOutput("Feeder/AverageVelocityRPM", calculateAverageVelocity(inputs.feederMotorsVelocityRPM));
-        }
-
-        // Log subshooter data
-        if (inputs.subshootersConnected != null) {
-            for (int i = 0; i < inputs.subshootersConnected.length; i++) {
-                Logger.recordOutput("SubshooterMotor" + (i + 1) + "/connected", inputs.subshootersConnected[i]);
-            }
-        }
-
-        if (inputs.subshooterMotorsVelocityRPM != null && inputs.subshooterMotorsVelocityRPM.length > 0) {
-            Logger.recordOutput(
-                    "Subshooter/AverageVelocityRPM", calculateAverageVelocity(inputs.subshooterMotorsVelocityRPM));
         }
     }
 
