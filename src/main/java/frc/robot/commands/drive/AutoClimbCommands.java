@@ -101,12 +101,12 @@ public class AutoClimbCommands {
     public static Pose2d getClimbPrepPose() {
         Translation2d position = getClimbPrepPosition();
 
-        // For blue alliance, face toward the field center (positive X direction)
-        // For red alliance, face toward the field center (negative X direction)
+        // For blue alliance, face toward the climb tower (180 degrees)
+        // For red alliance, face toward the climb tower (0 degrees)
         boolean isRed = DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red;
 
-        Rotation2d rotation = isRed ? Rotation2d.fromDegrees(180) : Rotation2d.fromDegrees(0);
+        Rotation2d rotation = isRed ? Rotation2d.fromDegrees(0) : Rotation2d.fromDegrees(180);
 
         return new Pose2d(position, rotation);
     }

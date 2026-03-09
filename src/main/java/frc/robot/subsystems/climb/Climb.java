@@ -49,16 +49,16 @@ public class Climb extends SubsystemBase {
     // Pov Up - move climb upward (decreasing position)
     public Command manualUpCommand() {
         return run(() -> {
-                    if (!inputs.hardwareConnected || !inputs.absoluteEncoderConnected) {
-                        io.setMotorOutput(0.0);
-                        return;
-                    }
+                    // if (!inputs.hardwareConnected || !inputs.absoluteEncoderConnected) {
+                    //     io.setMotorOutput(0.0);
+                    //     return;
+                    // }
 
-                    // Check upper limit
-                    if (isAtUpperLimit()) {
-                        io.setMotorOutput(0.0);
-                        return;
-                    }
+                    // // Check upper limit
+                    // if (isAtUpperLimit()) {
+                    //     io.setMotorOutput(0.0);
+                    //     return;
+                    // }
 
                     io.setMotorOutput(MANUAL_UP_VOLTAGE.in(Volts));
                 })
@@ -68,16 +68,16 @@ public class Climb extends SubsystemBase {
     // Pov Down - move climb downward (increasing position)
     public Command manualDownCommand() {
         return run(() -> {
-                    if (!inputs.hardwareConnected || !inputs.absoluteEncoderConnected) {
-                        io.setMotorOutput(0.0);
-                        return;
-                    }
+                    // if (!inputs.hardwareConnected || !inputs.absoluteEncoderConnected) {
+                    //     io.setMotorOutput(0.0);
+                    //     return;
+                    // }
 
-                    // Check lower limit
-                    if (isAtLowerLimit()) {
-                        io.setMotorOutput(0.0);
-                        return;
-                    }
+                    // // Check lower limit
+                    // if (isAtLowerLimit()) {
+                    //     io.setMotorOutput(0.0);
+                    //     return;
+                    // }
 
                     io.setMotorOutput(MANUAL_DOWN_VOLTAGE.in(Volts));
                 })

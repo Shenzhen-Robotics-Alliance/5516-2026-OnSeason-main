@@ -13,16 +13,19 @@
 
 package frc.robot.commands.drive;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.constants.HubConstants;
 import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.vision.Vision;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -31,12 +34,15 @@ import org.littletonrobotics.junction.Logger;
  * Commands for aligning the robot to the hub with velocity prediction.
  *
  * <p>This provides feedforward + feedback control for more accurate aiming when the robot is moving.
+ *
+ * <p>Note: The Hub center position is fixed and does not depend on AprilTag detection. AprilTags are used for robot
+ * pose estimation (odometry), but aiming is done using the fixed Hub center coordinates for stability and reliability.
  */
 public class HubAlignmentCommands {
     // PID constants for angle control
     private static final double ANGLE_KP = 5.0;
     private static final double ANGLE_KD = 0.2;
-    private static final double ANGLE_MAX_VELOCITY = 12.0;
+    private static final double ANGLE_MAX_VELOCITY = 20.0;
     private static final double ANGLE_MAX_ACCELERATION = 30.0;
 
     // Feedforward gain for velocity prediction (0.7 = 70% feedforward)
@@ -45,26 +51,10 @@ public class HubAlignmentCommands {
     // Robot control period (20ms)
     private static final double ROBOT_PERIOD_SECS = 0.02;
 
-    // Field dimensions for alliance mirroring (2026 FRC field)
-    private static final double FIELD_LENGTH_METERS = 16.54;
-    private static final double FIELD_WIDTH_METERS = 8.02;
+    // Deadband for joystick (same as DriveCommands)
+    private static final double DEADBAND = 0.1;
 
     private HubAlignmentCommands() {}
-
-    /**
-     * Mirrors a target position for red alliance.
-     *
-     * @param blueTarget Target position for blue alliance
-     * @return Mirrored position for red alliance, or original if blue
-     */
-    private static Translation2d mirrorForAlliance(Translation2d blueTarget) {
-        if (DriverStation.getAlliance().isPresent()
-                && DriverStation.getAlliance().get() == Alliance.Red) {
-            // Mirror across field center
-            return new Translation2d(FIELD_LENGTH_METERS - blueTarget.getX(), blueTarget.getY());
-        }
-        return blueTarget;
-    }
 
     /**
      * Creates a command that drives while aiming at a target with velocity prediction.
@@ -84,41 +74,50 @@ public class HubAlignmentCommands {
     }
 
     /**
-     * Creates a command that aims at a target with alliance-aware target selection.
+     * Creates a command that aims at the hub center using fixed coordinates.
      *
-     * <p>Automatically mirrors the target position for red alliance.
+     * <p>Uses the fixed Hub center position from HubConstants, automatically handling alliance color (blue/red) by
+     * mirroring coordinates. This does NOT use AprilTag positions for aiming - AprilTags are only used for robot pose
+     * estimation.
      *
      * @param drive The drive subsystem
      * @param xSupplier Joystick X input
      * @param ySupplier Joystick Y input
-     * @param blueAllianceTarget Target position for blue alliance
-     * @return The command that drives while aiming at the target
+     * @return The command that drives while aiming at the Hub center
      */
-    public static Command aimAtTargetWithAlliance(
-            Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d blueAllianceTarget) {
-        return new AimAtTargetWithAllianceCommand(drive, xSupplier, ySupplier, blueAllianceTarget);
+    public static Command aimAtHub(Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+        return new AimAtHubCommand(drive, xSupplier, ySupplier);
     }
 
     /**
-     * Creates a command that aims at the hub using vision AprilTag detection.
+     * Creates a command that aims at the hub with velocity prediction.
      *
-     * <p>Uses the vision system to find the nearest visible hub AprilTag and aims at it. This provides dynamic,
-     * real-time hub tracking without hardcoded positions.
+     * <p>This is the primary command for auto-aligning to the Hub during teleop. Uses fixed Hub center coordinates and
+     * does not rely on vision AprilTag detection.
      *
      * @param drive The drive subsystem
-     * @param vision The vision subsystem
      * @param xSupplier Joystick X input
      * @param ySupplier Joystick Y input
-     * @param fallbackTarget Fallback target position if no hub tag is visible
-     * @return The command that drives while aiming at the hub
+     * @return The command that drives while aiming at the Hub center
      */
-    public static Command aimAtHubWithVision(
-            Drive drive,
-            Vision vision,
-            DoubleSupplier xSupplier,
-            DoubleSupplier ySupplier,
-            Translation2d fallbackTarget) {
-        return new AimAtHubWithVisionCommand(drive, vision, xSupplier, ySupplier, fallbackTarget);
+    public static Command aimAtHubWithVelocityPrediction(
+            Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
+        return new AimAtHubCommand(drive, xSupplier, ySupplier);
+    }
+
+    /** Get linear velocity from joysticks - same logic as DriveCommands for consistency. */
+    private static Translation2d getLinearVelocityFromJoysticks(double x, double y, double maxSpeed) {
+        // Apply deadband
+        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
+        Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
+
+        // Square magnitude for more precise control
+        linearMagnitude = linearMagnitude * linearMagnitude;
+
+        // Return new linear velocity
+        return new Pose2d(new Translation2d(), linearDirection)
+                .transformBy(new Transform2d(linearMagnitude * maxSpeed, 0.0, new Rotation2d()))
+                .getTranslation();
     }
 
     /**
@@ -159,9 +158,9 @@ public class HubAlignmentCommands {
 
         @Override
         public void execute() {
-            // Get linear velocity from joysticks (simplified - no deadband for alignment)
-            double x = xSupplier.getAsDouble();
-            double y = ySupplier.getAsDouble();
+            // Get linear velocity from joysticks - negate x and y to match manual drive direction
+            double x = -xSupplier.getAsDouble();
+            double y = -ySupplier.getAsDouble();
             Translation2d linearVelocity = new Translation2d(x, y).times(drive.getMaxLinearSpeedMetersPerSec());
 
             // Get robot position and velocity
@@ -219,31 +218,26 @@ public class HubAlignmentCommands {
     }
 
     /**
-     * Command that aims at a target with alliance-aware target selection.
+     * Command that aims at the Hub center using fixed coordinates.
      *
-     * <p>Automatically mirrors the target position for red alliance.
+     * <p>This is the optimized version that uses HubConstants for the target position, not AprilTag detection. The
+     * AprilTags are still used by the Vision subsystem for robot pose estimation, but they do not affect aiming
+     * direction.
      */
-    private static class AimAtTargetWithAllianceCommand extends Command {
+    private static class AimAtHubCommand extends Command {
         private final Drive drive;
         private final DoubleSupplier xSupplier;
         private final DoubleSupplier ySupplier;
-        private final Translation2d blueAllianceTarget;
         private final DriveAndAimAtTargetCommand innerCommand;
 
-        AimAtTargetWithAllianceCommand(
-                Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier, Translation2d blueAllianceTarget) {
+        AimAtHubCommand(Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
             this.drive = drive;
             this.xSupplier = xSupplier;
             this.ySupplier = ySupplier;
-            this.blueAllianceTarget = blueAllianceTarget;
             this.innerCommand = new DriveAndAimAtTargetCommand(drive, xSupplier, ySupplier, () -> {
-                // Mirror target position for red alliance
-                if (DriverStation.getAlliance().isPresent()
-                        && DriverStation.getAlliance().get() == Alliance.Red) {
-                    // Mirror across field center (assuming field is 16.54m x 8.07m)
-                    return new Translation2d(16.54 - blueAllianceTarget.getX(), blueAllianceTarget.getY());
-                }
-                return blueAllianceTarget;
+                // Use fixed Hub center coordinates from HubConstants
+                // Automatically handles alliance color (blue/red) by mirroring
+                return HubConstants.getHubCenter();
             });
 
             addRequirements(drive);
@@ -251,73 +245,7 @@ public class HubAlignmentCommands {
 
         @Override
         public void initialize() {
-            innerCommand.initialize();
-        }
-
-        @Override
-        public void execute() {
-            innerCommand.execute();
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            innerCommand.end(interrupted);
-        }
-
-        @Override
-        public boolean isFinished() {
-            return innerCommand.isFinished();
-        }
-    }
-
-    /**
-     * Command that aims at the hub using vision AprilTag detection.
-     *
-     * <p>Uses the vision system to find the nearest visible hub AprilTag and aims at it.
-     */
-    private static class AimAtHubWithVisionCommand extends Command {
-        private final Drive drive;
-        private final Vision vision;
-        private final DoubleSupplier xSupplier;
-        private final DoubleSupplier ySupplier;
-        private final Translation2d fallbackTarget;
-        private final DriveAndAimAtTargetCommand innerCommand;
-
-        AimAtHubWithVisionCommand(
-                Drive drive,
-                Vision vision,
-                DoubleSupplier xSupplier,
-                DoubleSupplier ySupplier,
-                Translation2d fallbackTarget) {
-            this.drive = drive;
-            this.vision = vision;
-            this.xSupplier = xSupplier;
-            this.ySupplier = ySupplier;
-            this.fallbackTarget = fallbackTarget;
-            this.innerCommand = new DriveAndAimAtTargetCommand(drive, xSupplier, ySupplier, () -> {
-                // Check if red alliance
-                boolean isRed = DriverStation.getAlliance().isPresent()
-                        && DriverStation.getAlliance().get() == Alliance.Red;
-
-                // Try to get hub position from vision
-                var hubPosition = vision.getVisibleHubPosition(isRed);
-
-                if (hubPosition.isPresent()) {
-                    return hubPosition.get();
-                }
-
-                // Fallback to fixed target if no hub visible
-                if (isRed) {
-                    return new Translation2d(16.54 - fallbackTarget.getX(), fallbackTarget.getY());
-                }
-                return fallbackTarget;
-            });
-
-            addRequirements(drive, vision);
-        }
-
-        @Override
-        public void initialize() {
+            Logger.recordOutput("HubAlignment/Mode", "FixedHubCenter");
             innerCommand.initialize();
         }
 

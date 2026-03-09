@@ -73,7 +73,7 @@ public class RobotContainer {
 
     // Controller
     // private final CommandXboxController controller = new CommandXboxController(0);
-    public final DriverMap controller = new DriverMap.LeftHandedXbox(0);
+    public final DriverMap controller = new DriverMap.LeftHandedPS5(0);
     public final CommandXboxController copilotController = new CommandXboxController(1);
 
     // Dashboard inputs
@@ -249,15 +249,15 @@ public class RobotContainer {
                 .spitOutButton()
                 // Always stop eject motors when back is released.
                 .onFalse(shooter.runFeederVelocity(0.0).alongWith(arm.intakeIdleCommand()));
-        // Auto-aiming binding with vision (uses AprilTag detection) witrh auto rpm
+        // Auto-aiming binding - uses fixed Hub center coordinates (not AprilTag)
+        // Vision is still used for robot pose estimation (odometry), but not for aiming
         controller
                 .autoAlignToHubButton()
-                .whileTrue(HubAlignmentCommands.aimAtHubWithVision(
+                .whileTrue(HubAlignmentCommands.aimAtHub(
                         drive,
-                        vision,
                         () -> controller.translationalAxisY().getAsDouble(),
-                        () -> controller.translationalAxisX().getAsDouble(),
-                        hubLocation));
+                        () -> controller.translationalAxisX().getAsDouble())
+        .alongWith(shooter.runAutoRPMCommand(() -> drive.getPose(), hubLocation)));
 
         controller
                 // Hold left trigger: run intake only. Release to stop intake.

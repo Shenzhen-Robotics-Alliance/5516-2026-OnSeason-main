@@ -3,10 +3,11 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import frc.robot.constants.HubConstants;
 
 public class ShooterInterpolation {
-    // Hub Pos
-    public static final Translation2d HUB_CENTER = new Translation2d(4.6, 4.10);
+    // Use Hub center from HubConstants (consistent across the codebase)
+    public static final Translation2d HUB_CENTER = HubConstants.BLUE_HUB_CENTER;
 
     // table for left and right shooter RPMs based on distance to hub
     private static final InterpolatingDoubleTreeMap shooterMap = new InterpolatingDoubleTreeMap();
