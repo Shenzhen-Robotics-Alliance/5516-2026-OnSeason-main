@@ -145,6 +145,18 @@ public class Shooter extends SubsystemBase {
         return count > 0 ? sum / count : 0.0;
     }
 
+    private double calculateAverageAbsoluteVelocity(double[] velocities) {
+        if (velocities == null || velocities.length == 0) return 0.0;
+
+        double sum = 0.0;
+        int count = 0;
+        for (double velocity : velocities) {
+            sum += Math.abs(velocity);
+            count++;
+        }
+        return count > 0 ? sum / count : 0.0;
+    }
+
     private void setShooterMotorVolts(double shooterMotorVolts) {
         if (!hardwareOK()) shooterMotorVolts = 0;
         io.setShooterMotorsVoltage(shooterMotorVolts);
@@ -253,16 +265,27 @@ public class Shooter extends SubsystemBase {
      */
     public Command runShooterThenFeeder(
             DoubleSupplier shooterRpmSupplier, double feederRpm, double shooterReadyToleranceRpm) {
-        return run(() -> {
-            double shooterTargetRpm = shooterRpmSupplier.getAsDouble();
-            setShooterWithSubshooter(shooterTargetRpm);
+        final boolean[] feederLatchedOn = new boolean[] {false};
 
-            if (isShooterAtSpeed(shooterTargetRpm, shooterReadyToleranceRpm)) {
-                setFeederVelocity(feederRpm);
-            } else {
-                setFeederVelocity(0.0);
-            }
-        });
+        return run(() -> {
+                    double shooterTargetRpm = shooterRpmSupplier.getAsDouble();
+                    setShooterWithSubshooter(shooterTargetRpm);
+
+                    // Latch feeder once shooter first reaches speed to avoid rapid on/off toggling
+                    // caused by transient RPM dips when game piece enters the shooter.
+                    if (isShooterAtSpeed(shooterTargetRpm, shooterReadyToleranceRpm)) {
+                        feederLatchedOn[0] = true;
+                    }
+
+                    if (feederLatchedOn[0]) {
+                        setFeederVelocity(feederRpm);
+                    } else {
+                        setFeederVelocity(0.0);
+                    }
+
+                    Logger.recordOutput("Shooter/FeederLatchedOn", feederLatchedOn[0]);
+                })
+                .beforeStarting(() -> feederLatchedOn[0] = false);
     }
 
     /** Stops shooter, subshooter, and feeder together in one command. */
@@ -313,7 +336,15 @@ public class Shooter extends SubsystemBase {
         if (!hardwareOK()) return false;
         if (inputs.shooterMotorsVelocityRPM == null || inputs.shooterMotorsVelocityRPM.length == 0) return false;
 
-        double averageShooterRpm = calculateAverageVelocity(inputs.shooterMotorsVelocityRPM);
-        return Math.abs(Math.abs(averageShooterRpm) - Math.abs(targetRpm)) <= Math.abs(toleranceRpm);
+        // Use average magnitude to avoid sign cancellation when some motors are configured as opposed followers.
+        double averageShooterRpm = calculateAverageAbsoluteVelocity(inputs.shooterMotorsVelocityRPM);
+        boolean ready = Math.abs(averageShooterRpm - Math.abs(targetRpm)) <= Math.abs(toleranceRpm);
+
+        Logger.recordOutput("Shooter/ReadyCheck/TargetRPM", Math.abs(targetRpm));
+        Logger.recordOutput("Shooter/ReadyCheck/AverageRPM", averageShooterRpm);
+        Logger.recordOutput("Shooter/ReadyCheck/ToleranceRPM", Math.abs(toleranceRpm));
+        Logger.recordOutput("Shooter/ReadyCheck/IsReady", ready);
+
+        return ready;
     }
 }
