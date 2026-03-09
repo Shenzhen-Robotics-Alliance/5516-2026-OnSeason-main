@@ -32,17 +32,11 @@ public class ShooterIOReal implements ShooterIO {
     private final StatusSignal<Voltage>[] feederMotorOutputVoltages;
     private final StatusSignal<AngularVelocity>[] feederMotorVelocities;
 
-    // Subshooter motor (independently controlled)
-    private final TalonFX subshooterMotor;
-    private final StatusSignal<Current> subshooterMotorCurrent;
-    private final StatusSignal<Voltage> subshooterMotorOutputVoltage;
-    private final StatusSignal<AngularVelocity> subshooterMotorVelocity;
-
     // Control requests
     private final VoltageOut voltageOut = new VoltageOut(Volts.zero());
     private final VelocityVoltage shooterVelocityRequest = new VelocityVoltage(0);
     private final VelocityVoltage feederVelocityRequest = new VelocityVoltage(0);
-    private final VelocityVoltage subshooterVelocityRequest = new VelocityVoltage(0);
+    // private final VelocityVoltage subshooterVelocityRequest = new VelocityVoltage(0);
 
     // Track current control mode
     private boolean shooterVelocityControl = false;
@@ -155,40 +149,6 @@ public class ShooterIOReal implements ShooterIO {
         for (int i = 1; i < feederCount; i++) {
             feederMotors[i].setControl(new Follower(feederMotors[0].getDeviceID(), MotorAlignmentValue.Aligned));
         }
-
-        // Initialize subshooter motor (independently controlled, not a follower)
-        subshooterMotor = new TalonFX(SUBSHOOTER_MOTOR_ID);
-
-        // Apply current limit
-        CurrentLimitsConfigs subshooterCurrentLimit = new CurrentLimitsConfigs()
-                .withSupplyCurrentLimitEnable(true)
-                .withSupplyCurrentLimit(SHOOTER_MOTORS_CURRENT_LIMIT);
-        subshooterMotor.getConfigurator().apply(subshooterCurrentLimit);
-
-        // Apply motor output config
-        MotorOutputConfigs subshooterOutputConfig = new MotorOutputConfigs()
-                .withInverted(
-                        SUBSHOOTER_MOTOR_INVERTED
-                                ? InvertedValue.Clockwise_Positive
-                                : InvertedValue.CounterClockwise_Positive)
-                .withNeutralMode(NeutralModeValue.Coast);
-        subshooterMotor.getConfigurator().apply(subshooterOutputConfig);
-
-        // Configure PID for velocity control
-        TalonFXConfiguration subshooterConfig = new TalonFXConfiguration();
-        subshooterConfig.Slot0 = SHOOTER_VELOCITY_GAINS; // Use same PID gains as shooter
-        subshooterMotor.getConfigurator().apply(subshooterConfig);
-
-        // Create status signals
-        subshooterMotorCurrent = subshooterMotor.getSupplyCurrent();
-        subshooterMotorOutputVoltage = subshooterMotor.getMotorVoltage();
-        subshooterMotorVelocity = subshooterMotor.getVelocity();
-
-        // Set update frequencies
-        BaseStatusSignal.setUpdateFrequencyForAll(
-                freq, subshooterMotorCurrent, subshooterMotorOutputVoltage, subshooterMotorVelocity);
-
-        subshooterMotor.optimizeBusUtilization();
     }
 
     @Override
@@ -246,49 +206,12 @@ public class ShooterIOReal implements ShooterIO {
 
         inputs.feederMotorsAverageVolts = feederCount > 0 ? feederTotalVolts / feederCount : 0.0;
         inputs.feederMotorsTotalCurrentAmps = feederTotalCurrent;
-
-        // Update subshooter inputs
-        updateSubshooterInputs(inputs);
-    }
-
-    @Override
-    public void updateSubshooterInputs(ShooterIOInputs inputs) {
-        // Refresh signals
-        boolean connected = BaseStatusSignal.refreshAll(
-                        subshooterMotorCurrent, subshooterMotorOutputVoltage, subshooterMotorVelocity)
-                .isOK();
-
-        inputs.subshootersConnected = new boolean[] {connected};
-        inputs.subshooterMotorsVelocityRPM = new double[1];
-
-        if (connected) {
-            // Convert from rotations per second to RPM
-            inputs.subshooterMotorsVelocityRPM[0] = subshooterMotorVelocity.getValueAsDouble() * 60.0;
-        }
     }
 
     @Override
     public void setShooterWithSubshooter(double baseRPM) {
         // Set shooter base RPM
         setShooterVelocity(baseRPM);
-
-        // Set subshooter to baseRPM * offset
-        double subshooterRPM = baseRPM * SUBSHOOTER_RPM_OFFSET;
-        setSubshooterVelocity(subshooterRPM);
-    }
-
-    @Override
-    public void setSubshooterVelocity(double rpm) {
-        // Convert RPM to rotations per second for Phoenix6
-        double rps = rpm / 60.0;
-        subshooterVelocityRequest.withVelocity(rps);
-        subshooterMotor.setControl(subshooterVelocityRequest);
-    }
-
-    @Override
-    public void setSubshooterVoltage(double volts) {
-        voltageOut.withOutput(volts);
-        subshooterMotor.setControl(voltageOut);
     }
 
     @Override
