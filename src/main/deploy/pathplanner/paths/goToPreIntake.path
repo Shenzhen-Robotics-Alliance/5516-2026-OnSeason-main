@@ -48,7 +48,7 @@
   "folder": "IntakeAllAndShot",
   "idealStartingState": {
     "velocity": 1.0,
-    "rotation": 125.00000000000001
+    "rotation": 135.0
   },
   "useDefaultConstraints": true
 }

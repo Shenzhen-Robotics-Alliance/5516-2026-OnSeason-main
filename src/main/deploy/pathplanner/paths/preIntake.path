@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 6.7,
-        "y": 5.5
+        "x": 7.47438596491228,
+        "y": 6.962859649122808
       },
       "prevControl": {
-        "x": 5.578303745909891,
-        "y": 5.549354385947022
+        "x": 6.352689710822171,
+        "y": 7.01221403506983
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": 180.0
+    "rotation": 90.0
   },
   "reversed": false,
   "folder": "UpAcrossIntakeShot",

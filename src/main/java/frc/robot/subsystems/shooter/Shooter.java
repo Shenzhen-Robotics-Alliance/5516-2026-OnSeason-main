@@ -305,7 +305,11 @@ public class Shooter extends SubsystemBase {
 
             double targetRpm = ShooterInterpolation.getRpm(distance);
 
-            setShooterWithSubshooter(targetRpm);
+            if (isShooterAtSpeed(autoShooterRPM, ShooterContants.SHOOTER_READY_TOLERANCE_RPM)) {
+                setFeederVelocity(targetRpm);
+            } else {
+                setFeederVelocity(0.0);
+            }
 
             Logger.recordOutput("Shooter/AutoDistance", distance);
             Logger.recordOutput("Shooter/AutoTargetRPM", targetRpm);

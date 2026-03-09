@@ -16,7 +16,7 @@ public final class ArmConstants {
     public static final double INTAKE_VELOCITY = 1000;
     // The setpoint angle for arm to intake from ground
     public static final Angle ARM_STARTING_ANGLE = Degrees.of(127); // upper
-    public static final Angle ARM_INTAKING_ANGLE = Degrees.of(-10); // lower
+    public static final Angle ARM_INTAKING_ANGLE = Degrees.of(0); // lower
 
     public record ArmHardwareConstants(
             Distance ARM_COM_LENGTH,
@@ -43,7 +43,7 @@ public final class ArmConstants {
             // Following data need to be measured on real Robot
             Degrees.of(130), // upper
             Degrees.of(-10), // lower
-            Rotation.of(0.20),
+            Rotation.of(0.181),
             Rotation.of(-0.05),
             22,
             true,

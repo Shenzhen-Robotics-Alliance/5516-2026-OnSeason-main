@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.7,
-        "y": 5.5
+        "x": 7.339,
+        "y": 4.785
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.948883105779021,
-        "y": 5.523605076949438
+        "x": 7.587883087618994,
+        "y": 4.808605268421182
       },
       "isLocked": false,
       "linkedName": null
@@ -48,7 +48,7 @@
   "folder": "UpAcrossIntakeShot",
   "idealStartingState": {
     "velocity": 0.8,
-    "rotation": 0.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }

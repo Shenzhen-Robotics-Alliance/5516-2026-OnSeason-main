@@ -250,7 +250,6 @@ public interface DriverMap extends Subsystem {
             return ps5Controller.circle();
         }
 
-
         @Override
         public Trigger intakeButton() {
             return ps5Controller.L2();
