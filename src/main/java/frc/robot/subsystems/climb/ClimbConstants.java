@@ -11,8 +11,8 @@ public final class ClimbConstants {
     public static final Current CLIMB_CURRENT_LIMIT = Amps.of(40.0);
 
     // Manual control voltages
-    public static final Voltage MANUAL_UP_VOLTAGE = Volts.of(10.5);
-    public static final Voltage MANUAL_DOWN_VOLTAGE = Volts.of(-10.5);
+    public static final Voltage MANUAL_UP_VOLTAGE = Volts.of(15.5);
+    public static final Voltage MANUAL_DOWN_VOLTAGE = Volts.of(-15.5);
 
     // CANCoder (absolute encoder) configuration
     public static final int CANCODER_ID = 23;

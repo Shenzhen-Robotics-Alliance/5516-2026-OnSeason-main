@@ -159,8 +159,8 @@ public class HubAlignmentCommands {
         @Override
         public void execute() {
             // Get linear velocity from joysticks - negate x and y to match manual drive direction
-            double x = -xSupplier.getAsDouble();
-            double y = -ySupplier.getAsDouble();
+            double x = xSupplier.getAsDouble();
+            double y = ySupplier.getAsDouble();
             Translation2d linearVelocity = new Translation2d(x, y).times(drive.getMaxLinearSpeedMetersPerSec());
 
             // Get robot position and velocity

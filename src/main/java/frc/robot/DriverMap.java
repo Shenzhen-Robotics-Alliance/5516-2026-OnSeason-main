@@ -42,6 +42,8 @@ public interface DriverMap extends Subsystem {
 
     Trigger spitOutButton();
 
+    Trigger shootWithoutAutoAimButton();
+
     DoubleSupplier translationalAxisX();
 
     DoubleSupplier translationalAxisY();
@@ -144,6 +146,11 @@ public interface DriverMap extends Subsystem {
         @Override
         public Trigger spitOutButton() {
             return xboxController.back();
+        }
+
+        @Override
+        public Trigger shootWithoutAutoAimButton() {
+            return xboxController.x();
         }
 
         @Override
@@ -269,6 +276,11 @@ public interface DriverMap extends Subsystem {
         @Override
         public Trigger spitOutButton() {
             return ps5Controller.create();
+        }
+
+        @Override
+        public Trigger shootWithoutAutoAimButton() {
+            return ps5Controller.square();
         }
 
         @Override
