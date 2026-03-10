@@ -149,7 +149,7 @@ public class RobotContainer {
                         new ModuleIO() {},
                         new ModuleIO() {},
                         (robotPose) -> {});
-                vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
+                vision = new Vision(drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
                 climb = new Climb(new ClimbIO() {
                     @Override
                     public void updateInputs(ClimbInputs inputs) {}
@@ -327,8 +327,7 @@ public class RobotContainer {
                 "shoot",
                 shooter.runShooterThenFeeder(shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM)
                         .withTimeout(AUTO_SHOOT_TIMEOUT_SECS)
-                        .andThen(Commands.runOnce(
-                                () -> shooter.stopAllShooterMotors().schedule())));
+                        .andThen(Commands.runOnce(() -> shooter.stopAllShooterMotors())));
     }
 
     /**

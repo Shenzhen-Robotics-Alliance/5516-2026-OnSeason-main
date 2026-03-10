@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.711603861713018,
-        "y": 7.040745770940041
+        "x": 7.711604520711106,
+        "y": 7.040743756904629
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.339431180952692,
+        "x": 7.474,
         "y": 4.784577483991415
       },
       "prevControl": {
-        "x": 7.263359716000332,
-        "y": 5.044114162481245
+        "x": 7.2035445410764805,
+        "y": 4.784577483991415
       },
       "nextControl": null,
       "isLocked": false,
@@ -48,7 +48,7 @@
   "folder": "UpAcrossIntakeShot",
   "idealStartingState": {
     "velocity": 0.5,
-    "rotation": 180.0
+    "rotation": 90.0
   },
   "useDefaultConstraints": true
 }
