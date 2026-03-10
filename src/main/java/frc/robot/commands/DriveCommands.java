@@ -300,8 +300,8 @@ public class DriveCommands {
     public static Command autoAim(Drive drive, DoubleSupplier xSupplier, DoubleSupplier ySupplier) {
         return aimAtTarget(
                 drive,
-                () -> xSupplier.getAsDouble() * 0.4, // Reduce sensitivity to 0.3x
-                () -> ySupplier.getAsDouble() * 0.4, // Reduce sensitivity to 0.3x
+                () -> xSupplier.getAsDouble() * 0.6, // Reduce sensitivity to 0.3x
+                () -> ySupplier.getAsDouble() * 0.6, // Reduce sensitivity to 0.3x
                 BLUE_TARGET_POSITION);
     }
 }

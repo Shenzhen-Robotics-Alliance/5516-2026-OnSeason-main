@@ -43,10 +43,10 @@ public class AutoClimbCommands {
     public static final Translation2d BLUE_CLIMB_PREP_POSITION = new Translation2d(1.5, 4.0);
 
     // Tolerance for reaching the target position (in meters)
-    private static final double POSITION_TOLERANCE_METERS = 0.01;
+    private static final double POSITION_TOLERANCE_METERS = 0.003;
 
     // Maximum standard deviation for pose estimation to be considered reliable
-    // If the pose estimation uncertainty is higher than this, we should not use pathfinding
+    // If the pose estimation uncertain ty is  igher than this, we should not use pathfinding
     private static final double MAX_POSE_STD_DEV_METERS = 0.7;
 
     // PathConstraints for stable movement with arm extended
