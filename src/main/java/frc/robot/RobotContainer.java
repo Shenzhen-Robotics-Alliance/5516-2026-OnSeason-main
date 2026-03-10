@@ -228,7 +228,7 @@ public class RobotContainer {
 
         // Switch to X pattern when X button is pressed
         // controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-        controller.lockChassisWithXFormatButton().whileTrue(Commands.runOnce(drive::stopWithX, drive));
+        // controller.lockChassisWithXFormatButton().whileTrue(Commands.runOnce(drive::stopWithX, drive));
 
         // Reset gyro / odometry
         final Runnable resetOdometry = Constants.currentMode == Constants.Mode.SIM
@@ -271,6 +271,13 @@ public class RobotContainer {
                         () -> -controller.translationalAxisY().getAsDouble(),
                         () -> -controller.translationalAxisX().getAsDouble()))
                 // Release right trigger: stop both shooter and feeder immediately.
+                .onFalse(shooter.stopAllShooterMotors());
+
+        // Square button: Shoot without auto-aim, but with auto RPM (based on currentShotMode)
+        controller
+                .shootWithoutAutoAimButton()
+                .whileTrue(shooter.runShooterThenFeeder(
+                        shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM))
                 .onFalse(shooter.stopAllShooterMotors());
 
         Trigger outtakeEnabledTrigger = controller.spitOutButton().and(new Trigger(arm::isAtIntakePosition));
