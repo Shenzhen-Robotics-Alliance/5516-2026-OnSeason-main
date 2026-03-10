@@ -208,8 +208,8 @@ public class RobotContainer {
         // Default command, normal field-relative drive
         drive.setDefaultCommand(DriveCommands.joystickDrive(
                 drive,
-                () -> controller.translationalAxisY().getAsDouble(),
-                () -> controller.translationalAxisX().getAsDouble(),
+                () -> -controller.translationalAxisY().getAsDouble(),
+                () -> -controller.translationalAxisX().getAsDouble(),
                 () -> -controller.rotationalAxisX().getAsDouble()));
 
         // Lock to 0° when A button is held
@@ -268,8 +268,8 @@ public class RobotContainer {
                         shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM))
                 .whileTrue(HubAlignmentCommands.aimAtHub(
                         drive,
-                        () -> controller.translationalAxisY().getAsDouble(),
-                        () -> controller.translationalAxisX().getAsDouble()))
+                        () -> -controller.translationalAxisY().getAsDouble(),
+                        () -> -controller.translationalAxisX().getAsDouble()))
                 // Release right trigger: stop both shooter and feeder immediately.
                 .onFalse(shooter.stopAllShooterMotors());
 
