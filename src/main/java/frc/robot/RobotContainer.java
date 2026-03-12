@@ -59,7 +59,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
 
     private static final double AUTO_SHOOT_TIMEOUT_SECS = 2.0;
-    private static final double MANUAL_SHOT_RPM = -3500.0;
+    private static final double MANUAL_SHOT_RPM = -2300.0; // -3500
 
     private enum ShotMode {
         AUTO,
@@ -89,7 +89,7 @@ public class RobotContainer {
     private Command intakeHoldCommand;
     private Command intakeOnlyCommand;
 
-    private ShotMode currentShotMode = ShotMode.MANUAL;
+    private ShotMode currentShotMode = ShotMode.AUTO;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
@@ -322,7 +322,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("hold intake", intakeHoldCommand);
         NamedCommands.registerCommand("Stop intake", Commands.runOnce(this::stopIntakeCommands));
 
-        DoubleSupplier shooterVelocitySupplier = () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -2800.0);
+        DoubleSupplier shooterVelocitySupplier =
+                () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -800.0); // -2800
         NamedCommands.registerCommand(
                 "shoot",
                 shooter.runShooterThenFeeder(shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM)
