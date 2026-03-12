@@ -43,10 +43,10 @@ public class VisionConstants {
             Inches.of(26).plus(Inches.of(0)), // Height 2 inch + Chassis Height 4 inch
             new Rotation3d(Degrees.zero(), Degrees.of(-12), Degrees.zero())); // Pitch upwards 24 degrees
     public static Transform3d robotToCamera2 = new Transform3d(
-            Inches.of(2.5), // forward 3 inch
+            Inches.of(-2.5), // forward 3 inch
             Inches.of(1.5).times(-1), // Rightward 1 inch
             Inches.of(27.6).plus(Inches.of(0)),
-            new Rotation3d(Degrees.zero(), Degrees.of(-12), Degrees.of(180)));
+            new Rotation3d(Degrees.zero(), Degrees.of(-12), Degrees.of(0)));
     // Basic filtering thresholds
     public static double maxAmbiguity = 0.3;
     public static double maxZError = 0.75;
