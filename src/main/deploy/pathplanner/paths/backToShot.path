@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.286201321166558,
-        "y": 5.418
+        "x": 7.285243233272485,
+        "y": 5.490906270196183
       },
       "isLocked": false,
       "linkedName": null
@@ -20,8 +20,8 @@
         "y": 5.172728070175439
       },
       "prevControl": {
-        "x": 2.3586935667925273,
-        "y": 5.172728070175439
+        "x": 2.348976538840529,
+        "y": 5.171212583691475
       },
       "nextControl": null,
       "isLocked": false,
@@ -58,7 +58,7 @@
   "reversed": false,
   "folder": "UpAcrossIntakeShot",
   "idealStartingState": {
-    "velocity": 5.1,
+    "velocity": 7.0,
     "rotation": -45.0
   },
   "useDefaultConstraints": true
