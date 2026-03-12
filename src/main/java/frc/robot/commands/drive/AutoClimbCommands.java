@@ -52,8 +52,8 @@ public class AutoClimbCommands {
     // PathConstraints for stable movement with arm extended
     // Lower speed and acceleration for safety during climb approach
     private static final PathConstraints CLIMB_NAVIGATION_CONSTRAINTS = new PathConstraints(
-            5.0, // Max velocity: 2 m/s (slower for safety)
-            3.0, // Max acceleration: 3 m/s² (moderate acceleration)
+            8.0, // Max velocity: 2 m/s (slower for safety)
+            5.0, // Max acceleration: 3 m/s² (moderate acceleration)
             Units.degreesToRadians(360), // Max angular velocity: 360 deg/s
             Units.degreesToRadians(540)); // Max angular acceleration: 540 deg/s²
 

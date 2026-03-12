@@ -20,7 +20,7 @@ public class DriveTrainConstants {
     /** numbers that needs to be changed to fit each robot TODO: change these numbers to match your robot */
     public static final double WHEEL_COEFFICIENT_OF_FRICTION = 1.5;
 
-    public static final Mass ROBOT_MASS = Kilograms.of(57); // robot weight with bumpers
+    public static final Mass ROBOT_MASS = Kilograms.of(62); // robot weight with bumpers
 
     /** TODO: change motor type to match your robot */
     public static final DCMotor DRIVE_MOTOR_MODEL = DCMotor.getKrakenX60(1);
@@ -42,7 +42,7 @@ public class DriveTrainConstants {
     public static final Current DRIVE_OVER_CURRENT_PROTECTION = Amps.of(65);
     public static final Time DRIVE_OVERHEAT_PROTECTION_TIME = Seconds.of(1);
     public static final Current DRIVE_OVERHEAT_PROTECTION_CURRENT = Amps.of(45);
-    public static final Current STEER_CURRENT_LIMIT = Amps.of(15);
+    public static final Current STEER_CURRENT_LIMIT = Amps.of(20);
 
     public static final Current OVER_CURRENT_WARNING = Amps.of(240);
 
