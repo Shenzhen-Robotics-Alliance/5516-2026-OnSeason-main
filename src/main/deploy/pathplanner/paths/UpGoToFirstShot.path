@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.72,
-        "y": 6.0
+        "x": 3.5036773428232504,
+        "y": 4.029620403321471
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.340164395973781,
-        "y": 5.689172394040336
+        "x": 3.8817536123042666,
+        "y": 4.029620403321471
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.788,
-        "y": 4.972
+        "x": 2.6752194543297754,
+        "y": 4.029620403321471
       },
       "prevControl": {
-        "x": 2.419389482148148,
-        "y": 5.226943778625701
+        "x": 2.4252194543297754,
+        "y": 4.029620403321471
       },
       "nextControl": null,
       "isLocked": false,
@@ -37,7 +37,7 @@
         "y": 4.0
       },
       "rotationOffset": 0.0,
-      "minWaypointRelativePos": 0.5272084805653748,
+      "minWaypointRelativePos": 0.6366704161979757,
       "maxWaypointRelativePos": 1.0,
       "name": "Point Towards Zone"
     }
@@ -52,13 +52,13 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0,
-    "rotation": -43.68811221749592
+    "velocity": 0.5,
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "UpNoAcross",
   "idealStartingState": {
-    "velocity": 0,
+    "velocity": 1.2,
     "rotation": 0.0
   },
   "useDefaultConstraints": true
