@@ -103,7 +103,8 @@ public class Vision extends SubsystemBase {
 
     /**
      * Returns the position of the best visible hub tag for the current alliance. For 2026 Reefscape: Blue uses tags 18,
-     * 19, 20, 21, 24, 25, 26, 27; Red uses tags 2, 3, 4, 5, 8, 9, 10
+     *
+     * <p>19, 20, 21, 24, 25, 26, 27; Red uses tags 2, 3, 4, 5, 8, 9, 10
      *
      * <p>Selection priority: 1. Lowest ambiguity (highest confidence), 2. Nearest distance
      *
@@ -111,57 +112,59 @@ public class Vision extends SubsystemBase {
      * @return Optional containing the hub position if visible
      */
     public java.util.Optional<Translation2d> getVisibleHubPosition(boolean isRedAlliance) {
-        // Hub tag IDs for 2026
-        int[] blueHubTags = {18, 19, 20, 21, 24, 25, 26, 27}; // Front and back tags for blue
-        int[] redHubTags = {2, 3, 4, 5, 8, 9, 10}; // Front and back tags for red
+
+        int[] blueHubTags = {18, 19, 20, 21, 24, 25, 26, 27};
+
+        int[] redHubTags = {2, 3, 4, 5, 8, 9, 10};
 
         int[] hubTags = isRedAlliance ? redHubTags : blueHubTags;
 
-        // Find the best hub tag based on confidence (lowest ambiguity)
-        // Priority: 1. Lowest ambiguity (highest confidence), 2. Nearest distance
         double bestScore = Double.MAX_VALUE; // Lower is better
+
         java.util.Optional<Translation2d> bestPosition = java.util.Optional.empty();
 
-        // Only use the first camera
-        if (inputs[0].poseObservations.length > 0) {
-            var robotPose = inputs[0].poseObservations[0].pose();
-            int[] visibleTagIds = inputs[0].tagIds;
+        for (int i = 0; i < inputs.length; i++) {
 
-            // Get ambiguity from the first pose observation
-            double ambiguity = inputs[0].poseObservations[0].ambiguity();
+            if (inputs[i].poseObservations.length > 0) {
 
-            for (int tagId : visibleTagIds) {
-                // Check if this tag is a hub tag
-                boolean isHubTag = false;
-                for (int hubTagId : hubTags) {
-                    if (tagId == hubTagId) {
-                        isHubTag = true;
-                        break;
+                var robotPose = inputs[i].poseObservations[0].pose();
+
+                int[] visibleTagIds = inputs[i].tagIds;
+
+                double ambiguity = inputs[i].poseObservations[0].ambiguity();
+
+                for (int tagId : visibleTagIds) {
+
+                    boolean isHubTag = false;
+
+                    for (int hubTagId : hubTags) {
+
+                        if (tagId == hubTagId) {
+
+                            isHubTag = true;
+
+                            break;
+                        }
                     }
-                }
+                    if (isHubTag) {
+                        var tagPose = aprilTagLayout.getTagPose(tagId);
 
-                if (isHubTag) {
-                    var tagPose = aprilTagLayout.getTagPose(tagId);
-                    if (tagPose.isPresent()) {
-                        double distance = tagPose.get()
-                                .toPose2d()
-                                .getTranslation()
-                                .getDistance(robotPose.toPose2d().getTranslation());
+                        if (tagPose.isPresent()) {
 
-                        // Score: lower ambiguity is better, then lower distance
-                        // Use ambiguity * 10 + distance as combined score
-                        double score = ambiguity;
+                            double score = ambiguity;
 
-                        if (score < bestScore) {
-                            bestScore = score;
-                            bestPosition = java.util.Optional.of(
-                                    tagPose.get().toPose2d().getTranslation());
+                            if (score < bestScore) {
+
+                                bestScore = score;
+
+                                bestPosition = java.util.Optional.of(
+                                        tagPose.get().toPose2d().getTranslation());
+                            }
                         }
                     }
                 }
             }
         }
-
         return bestPosition;
     }
 
