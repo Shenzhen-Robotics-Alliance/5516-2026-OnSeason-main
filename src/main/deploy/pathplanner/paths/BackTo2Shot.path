@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.502,
-        "y": 0.63
+        "x": 0.465,
+        "y": 0.837
       },
       "prevControl": null,
       "nextControl": {
-        "x": 0.7545423501539175,
-        "y": 1.0509496218594465
+        "x": 0.7311995433447636,
+        "y": 1.3409718365184728
       },
       "isLocked": false,
       "linkedName": null
@@ -20,8 +20,8 @@
         "y": 3.050533807829181
       },
       "prevControl": {
-        "x": 2.3359009418194234,
-        "y": 2.96276108783699
+        "x": 2.3652862217278603,
+        "y": 2.964197363793752
       },
       "nextControl": null,
       "isLocked": false,
@@ -51,7 +51,7 @@
         "y": 4.0
       },
       "rotationOffset": 0.0,
-      "minWaypointRelativePos": 0.4692737430167623,
+      "minWaypointRelativePos": 0.3971731448763249,
       "maxWaypointRelativePos": 1.0,
       "name": "Point Towards Zone"
     }
