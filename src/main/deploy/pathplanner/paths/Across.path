@@ -41,13 +41,13 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 4.0,
+    "velocity": 3.0,
     "rotation": 135.0
   },
   "reversed": false,
   "folder": "UpAcrossIntakeShot",
   "idealStartingState": {
-    "velocity": 5.2,
+    "velocity": 3.0,
     "rotation": 135.0
   },
   "useDefaultConstraints": true

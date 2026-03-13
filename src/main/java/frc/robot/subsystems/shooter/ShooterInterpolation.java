@@ -10,10 +10,10 @@ public class ShooterInterpolation {
     private static final InterpolatingDoubleTreeMap shooterMap = new InterpolatingDoubleTreeMap();
 
     static {
-        shooterMap.put(1.5, -2000.0); // 2000
-        shooterMap.put(2.5, -2500.0); // 2500
-        shooterMap.put(3.5, -3000.0); // 3000
-        shooterMap.put(4.5, -3500.0); // 3500
+        shooterMap.put(1.5, -2500.0); // 2000
+        shooterMap.put(2.5, -3000.0); // 2500
+        shooterMap.put(3.5, -3500.0); // 3000
+        shooterMap.put(4.5, -4000.0); // 3500
     }
 
     public record InterpolatedRPM(double shooterRPM, double distance) {}
