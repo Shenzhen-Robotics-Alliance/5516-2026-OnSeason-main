@@ -75,12 +75,12 @@ public final class ShooterContants {
             new Slot0Configs().withKP(0.1).withKI(0.0).withKD(0.0).withKS(0.0).withKV(0.12);
 
     // Maximum RPM for shooter and feeder
-    public static final double MAX_SHOOTER_RPM = -6000.0;
+    public static final double MAX_SHOOTER_RPM = -5000.0;
 
     public static final double MAX_FEEDER_RPM = 2500.0;
     public static final double FEEDER_SHOOT_RPM = -2000.0;
     public static final double FEEDER_OUTTAKE_RPM = 2000.0;
-    public static final double SHOOTER_READY_TOLERANCE_RPM = 400.0;
+    public static final double SHOOTER_READY_TOLERANCE_RPM = 250.0;
 
     // Voltage settings for backward compatibility
     public record VoltageSettings(double[] shooterMotorVolts, double[] feederMotorVolts) {
