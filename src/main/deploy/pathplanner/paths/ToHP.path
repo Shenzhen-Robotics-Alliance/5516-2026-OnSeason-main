@@ -4,24 +4,24 @@
     {
       "anchor": {
         "x": 2.686,
-        "y": 2.867
+        "y": 2.857
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.935715432168539,
-        "y": 2.8789248872900277
+        "x": 2.9359549033126005,
+        "y": 2.8617482954824283
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.465,
-        "y": 0.8366315789473697
+        "x": 0.51,
+        "y": 0.64
       },
       "prevControl": {
-        "x": 0.0331361488316243,
-        "y": 0.5054661971580054
+        "x": 0.23941323112924717,
+        "y": 0.7246855953354877
       },
       "nextControl": null,
       "isLocked": false,
@@ -47,11 +47,11 @@
   "pointTowardsZones": [
     {
       "fieldPosition": {
-        "x": 0.5,
-        "y": 4.0
+        "x": 0.0,
+        "y": 0.65
       },
-      "rotationOffset": 0.0,
-      "minWaypointRelativePos": 0.7620111731843611,
+      "rotationOffset": 180.0,
+      "minWaypointRelativePos": 0.25,
       "maxWaypointRelativePos": 1.0,
       "name": "Point Towards Zone"
     }
@@ -67,7 +67,7 @@
   },
   "goalEndState": {
     "velocity": 0.0,
-    "rotation": 90.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "HP ",
