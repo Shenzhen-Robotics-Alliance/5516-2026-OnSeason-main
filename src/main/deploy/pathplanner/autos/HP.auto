@@ -23,7 +23,7 @@
               {
                 "type": "wait",
                 "data": {
-                  "waitTime": 3.0
+                  "waitTime": 4.0
                 }
               },
               {
@@ -77,7 +77,7 @@
                     {
                       "type": "wait",
                       "data": {
-                        "waitTime": 5.0
+                        "waitTime": 4.0
                       }
                     },
                     {
@@ -93,9 +93,21 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.8
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "BackTo2Shot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.8
           }
         },
         {

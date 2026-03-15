@@ -329,7 +329,7 @@ public class RobotContainer {
                 "shoot",
                 shooter.runShooterThenFeeder(shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM)
                         .withTimeout(AUTO_SHOOT_TIMEOUT_SECS)
-                        .andThen(Commands.runOnce(() -> shooter.stopAllShooterMotors())));
+                        .andThen(shooter.stopAllShooterMotors()));
     }
 
     /**
