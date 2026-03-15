@@ -324,7 +324,7 @@ public class RobotContainer {
         NamedCommands.registerCommand("hold", Commands.runOnce(() -> arm.requestPosition(ARM_STARTING_ANGLE), arm));
 
         DoubleSupplier shooterVelocitySupplier =
-                () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -2300.0); // -2800
+                () -> SmartDashboard.getNumber("Shooter Velocity (RPM)", -2800.0); // -2800
         NamedCommands.registerCommand(
                 "shoot",
                 shooter.runShooterThenFeeder(shooterVelocitySupplier, FEEDER_SHOOT_RPM, SHOOTER_READY_TOLERANCE_RPM)
